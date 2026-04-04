@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Habit Tracker 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0f1b2d;
+  --surface:  #162032;
+  --surface2: #1a2840;
+  --surface3: #1f3050;
+  --header:   #0a1525;
+  --border:   #1e3050;
+  --border2:  #2a4060;
+  --teal:     #4ecdc4;
+  --teal-dim: #2a9d8f;
+  --green:    #52b788;
+  --yellow:   #f4a261;
+  --red:      #e76f51;
+  --blue:     #4895ef;
+  --purple:   #7b68ee;
+  --text:     #e8f4f8;
+  --muted:    #8ba8c4;
+  --muted2:   #4a6080;
+  --check-bg: #1a3050;
+  --check-on: #4ecdc4;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--header);
+  border-bottom: 2px solid var(--border2);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), var(--blue));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.brand-title { font-size: 18px; font-weight: 700; color: var(--text); }
+.brand-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+.topbar-right { display: flex; gap: 10px; align-items: center; }
+
+.notion-btn {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 14px; cursor: pointer;
+  color: var(--muted); font-size: 12px; font-weight: 500;
+  transition: all 0.2s;
+}
+.notion-btn:hover { border-color: var(--teal); color: var(--teal); }
+.ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted2); transition: all 0.3s; }
+.ndot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+/* ── LAYOUT ── */
+.app { padding: 0; }
+
+/* ── WEEK TABS ── */
+.week-tabs {
+  background: var(--header);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; gap: 2px; overflow-x: auto;
+}
+.week-tab {
+  padding: 12px 18px; cursor: pointer; white-space: nowrap;
+  color: var(--muted); font-size: 12px; font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+.week-tab:hover { color: var(--text); }
+.week-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+/* ── OVERALL HEADER ── */
+.overall-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+
+.overall-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.overall-range { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.overall-ring {
+  position: relative; width: 72px; height: 72px; flex-shrink: 0;
+}
+.overall-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--border2); stroke-width: 7; }
+.ring-fill {
+  fill: none; stroke: var(--teal); stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
+  transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1);
+}
+.ring-pct {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 14px; font-weight: 700; color: var(--teal);
+}
+
+.overall-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.stat-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 80px;
+}
+.stat-val { font-size: 22px; font-weight: 700; color: var(--teal); }
+.stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-top: 2px; }
+
+.progress-track {
+  flex: 1; min-width: 200px;
+  background: var(--surface3); border-radius: 4px; height: 6px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue));
+  border-radius: 4px; transition: width 0.8s ease;
+}
+
+/* ── NOTION SETUP ── */
+.setup-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  margin: 20px 24px;
+  padding: 24px;
+  display: none;
+}
+.setup-wrap.show { display: block; }
+.setup-wrap h3 { font-size: 14px; font-weight: 600; color: var(--teal); margin-bottom: 6px; }
+.setup-wrap p { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
+.setup-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.setup-step {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; display: flex; gap: 10px;
+}
+.sn {
+  width: 22px; height: 22px; border-radius: 50%; background: var(--teal-dim);
+  color: #fff; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.st { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.st strong { color: var(--text); }
+.st a { color: var(--teal); text-decoration: none; }
+.st code {
+  background: var(--bg); border: 1px solid var(--border2); border-radius: 3px;
+  padding: 1px 5px; font-size: 11px; color: var(--yellow);
+}
+.input-row { display: flex; gap: 8px; flex-wrap: wrap; }
+input[type=text], input[type=password] {
+  flex: 1; min-width: 180px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 7px; padding: 9px 12px;
+  color: var(--text); font-size: 12px; outline: none;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: var(--teal); }
+input::placeholder { color: var(--muted2); }
+.btn {
+  padding: 9px 18px; border-radius: 7px; border: none;
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-teal { background: var(--teal); color: #0f1b2d; }
+.btn-teal:hover { background: #5de8df; }
+.btn-teal:disabled { opacity: 0.5; cursor: not-allowed; }
+.msg { margin-top: 8px; font-size: 12px; }
+.msg.ok { color: var(--green); }
+.msg.err { color: var(--red); }
+
+/* ── MAIN GRID ── */
+.grid-wrap { overflow-x: auto; padding: 0; }
+
+.habits-grid {
+  min-width: 700px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* Header row with day names */
+.grid-head th {
+  background: var(--header);
+  padding: 0;
+  border: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+
+.day-head {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 12px 8px; gap: 4px;
+}
+.day-name-label {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--teal);
+}
+.day-date-label { font-size: 10px; color: var(--muted); }
+
+.day-pct-ring { position: relative; width: 44px; height: 44px; }
+.day-pct-ring svg { width: 44px; height: 44px; transform: rotate(-90deg); }
+.dr-track { fill: none; stroke: var(--border2); stroke-width: 4; }
+.dr-fill {
+  fill: none; stroke-width: 4; stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.dr-pct {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 10px; font-weight: 700;
+}
+
+/* Left label column */
+.habit-label-col {
+  background: var(--surface);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  font-size: 12px; font-weight: 500; color: var(--text);
+  position: sticky; left: 0; z-index: 5;
+  min-width: 160px;
+}
+
+/* Checkbox cells */
+.check-cell {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  text-align: center; vertical-align: middle;
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.check-cell:hover { background: var(--surface3); }
+.check-cell.empty { background: var(--surface); cursor: default; opacity: 0.3; }
+
+.checkbox {
+  width: 20px; height: 20px; border-radius: 5px;
+  border: 1.5px solid var(--muted2);
+  background: var(--check-bg);
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.2s; cursor: pointer;
+  font-size: 12px; font-weight: 700;
+}
+.checkbox.done {
+  background: var(--teal); border-color: var(--teal);
+  color: #0f1b2d;
+}
+
+/* Section rows */
+.section-row td {
+  background: var(--header);
+  padding: 8px 14px;
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.12em;
+  border: 1px solid var(--border);
+}
+
+/* Pct row */
+.pct-row td {
+  background: var(--surface);
+  padding: 8px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.pct-label-cell {
+  background: var(--surface);
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  position: sticky; left: 0; z-index: 5;
+}
+.pct-val {
+  font-size: 13px; font-weight: 700;
+}
+
+/* Sync bar */
+.sync-bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 8px 24px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--muted);
+}
+.sdot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--muted2);
+}
+.sdot.sync { background: var(--yellow); animation: blink 1s infinite; }
+.sdot.ok   { background: var(--green); }
+.sdot.err  { background: var(--red); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+@media (max-width: 600px) {
+  .habit-label-col { min-width: 120px; font-size: 11px; padding: 8px; }
+  .overall-bar { gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon">📊</div>
+    <div>
+      <div class="brand-title">Habit Tracker 2026</div>
+      <div class="brand-sub">ABR – MAY · David</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="notion-btn" onclick="toggleSetup()">
+      <div class="ndot" id="ndot"></div>
+      <span id="notionLabel">Conectar Notion</span>
+    </div>
+  </div>
+</div>
+
+<!-- NOTION SETUP -->
+<div class="setup-wrap" id="setupWrap">
+  <h3>⚡ Vincular con Notion</h3>
+  <p>Conecta el tracker con tu base de datos <strong>📆 Agenda ABR–MAY 2026</strong> en Notion. Solo necesitas hacer esto una vez.</p>
+  <div class="setup-steps">
+    <div class="setup-step">
+      <div class="sn">1</div>
+      <div class="st">Ve a <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a>, crea una integración llamada <strong>"Habit Tracker"</strong> y copia el token <code>ntn_...</code></div>
+    </div>
+    <div class="setup-step">
+      <div class="sn">2</div>
+      <div class="st">Abre tu base <strong>📆 Agenda ABR–MAY 2026</strong> → <code>···</code> → <strong>Connections</strong> → agrega "Habit Tracker"</div>
+    </div>
+    <div class="setup-step">
+      <div class="sn">3</div>
+      <div class="st">El Database ID está en la URL: <code>notion.so/<strong>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</strong>?v=...</code></div>
+    </div>
+  </div>
+  <div class="input-row" style="margin-bottom:8px">
+    <input type="password" id="apiKey" placeholder="Token (ntn_... o secret_...)"/>
+  </div>
+  <div class="input-row">
+    <input type="text" id="dbId" placeholder="Database ID (32 caracteres)"/>
+    <button class="btn btn-teal" id="connectBtn" onclick="connectNotion()">Conectar</button>
+  </div>
+  <div class="msg" id="setupMsg"></div>
+</div>
+
+<!-- WEEK TABS -->
+<div class="week-tabs" id="weekTabs"></div>
+
+<!-- SYNC BAR -->
+<div class="sync-bar">
+  <div class="sdot" id="sdot"></div>
+  <span id="syncMsg">Sin conexión — cambios guardados localmente</span>
+</div>
+
+<!-- OVERALL BAR -->
+<div class="overall-bar">
+  <div>
+    <div class="overall-title" id="weekTitle">Semana 1</div>
+    <div class="overall-range" id="weekRange">29 mar – 4 abr</div>
+  </div>
+  <div class="overall-ring">
+    <svg viewBox="0 0 72 72">
+      <circle class="ring-track" cx="36" cy="36" r="32"/>
+      <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="32"/>
+    </svg>
+    <div class="ring-pct" id="ringPct">0%</div>
+  </div>
+  <div class="overall-stats">
+    <div class="stat-box">
+      <div class="stat-val" id="statDone">0</div>
+      <div class="stat-lbl">Hechas</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statTotal">0</div>
+      <div class="stat-lbl">Total</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-val" id="statPerfect">0</div>
+      <div class="stat-lbl">Días 100%</div>
+    </div>
+  </div>
+  <div style="flex:1; min-width:150px;">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Progreso semanal</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="grid-wrap">
+  <table class="habits-grid" id="mainGrid"></table>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+const WEEKS = [
+  {
+    key:"S1", label:"S1 · 29 mar–4 abr", title:"Semana 1", range:"29 mar – 4 abr",
+    days:[
+      {n:"Dom",d:"29 mar",k:"2026-03-29"},
+      {n:"Lun",d:"30 mar",k:"2026-03-30"},
+      {n:"Mar",d:"31 mar",k:"2026-03-31"},
+      {n:"Mié",d:"1 abr", k:"2026-04-01"},
+      {n:"Jue",d:"2 abr", k:"2026-04-02"},
+      {n:"Vie",d:"3 abr", k:"2026-04-03"},
+      {n:"Sáb",d:"4 abr", k:"2026-04-04"},
+    ]
+  },
+  {
+    key:"S2", label:"S2 · 5–11 abr", title:"Semana 2", range:"5 – 11 abr",
+    days:[
+      {n:"Dom",d:"5 abr", k:"2026-04-05"},
+      {n:"Lun",d:"6 abr", k:"2026-04-06"},
+      {n:"Mar",d:"7 abr", k:"2026-04-07"},
+      {n:"Mié",d:"8 abr", k:"2026-04-08"},
+      {n:"Jue",d:"9 abr", k:"2026-04-09"},
+      {n:"Vie",d:"10 abr",k:"2026-04-10"},
+      {n:"Sáb",d:"11 abr",k:"2026-04-11"},
+    ]
+  },
+  {
+    key:"S3", label:"S3 · 12–18 abr", title:"Semana 3", range:"12 – 18 abr",
+    days:[
+      {n:"Dom",d:"12 abr",k:"2026-04-12"},
+      {n:"Lun",d:"13 abr",k:"2026-04-13"},
+      {n:"Mar",d:"14 abr",k:"2026-04-14"},
+      {n:"Mié",d:"15 abr",k:"2026-04-15"},
+      {n:"Jue",d:"16 abr",k:"2026-04-16"},
+      {n:"Vie",d:"17 abr",k:"2026-04-17"},
+      {n:"Sáb",d:"18 abr",k:"2026-04-18"},
+    ]
+  },
+  {
+    key:"S4", label:"S4 · 19–25 abr", title:"Semana 4", range:"19 – 25 abr",
+    days:[
+      {n:"Dom",d:"19 abr",k:"2026-04-19"},
+      {n:"Lun",d:"20 abr",k:"2026-04-20"},
+      {n:"Mar",d:"21 abr",k:"2026-04-21"},
+      {n:"Mié",d:"22 abr",k:"2026-04-22"},
+      {n:"Jue",d:"23 abr",k:"2026-04-23"},
+      {n:"Vie",d:"24 abr",k:"2026-04-24"},
+      {n:"Sáb",d:"25 abr",k:"2026-04-25"},
+    ]
+  },
+  {
+    key:"S5", label:"S5 · 26 abr–2 may", title:"Semana 5", range:"26 abr – 2 may",
+    days:[
+      {n:"Dom",d:"26 abr",k:"2026-04-26"},
+      {n:"Lun",d:"27 abr",k:"2026-04-27"},
+      {n:"Mar",d:"28 abr",k:"2026-04-28"},
+      {n:"Mié",d:"29 abr",k:"2026-04-29"},
+      {n:"Jue",d:"30 abr",k:"2026-04-30"},
+      {n:"Vie",d:"1 may", k:"2026-05-01"},
+      {n:"Sáb",d:"2 may", k:"2026-05-02"},
+    ]
+  },
+  {
+    key:"S6", label:"S6 · 3–9 may", title:"Semana 6", range:"3 – 9 may",
+    days:[
+      {n:"Dom",d:"3 may", k:"2026-05-03"},
+      {n:"Lun",d:"4 may", k:"2026-05-04"},
+      {n:"Mar",d:"5 may", k:"2026-05-05"},
+      {n:"Mié",d:"6 may", k:"2026-05-06"},
+      {n:"Jue",d:"7 may", k:"2026-05-07"},
+      {n:"Vie",d:"8 may", k:"2026-05-08"},
+      {n:"Sáb",d:"9 may", k:"2026-05-09"},
+    ]
+  },
+  {
+    key:"S7", label:"S7 · 10–16 may", title:"Semana 7", range:"10 – 16 may",
+    days:[
+      {n:"Dom",d:"10 may",k:"2026-05-10"},
+      {n:"Lun",d:"11 may",k:"2026-05-11"},
+      {n:"Mar",d:"12 may",k:"2026-05-12"},
+      {n:"Mié",d:"13 may",k:"2026-05-13"},
+      {n:"Jue",d:"14 may",k:"2026-05-14"},
+      {n:"Vie",d:"15 may",k:"2026-05-15"},
+      {n:"Sáb",d:"16 may",k:"2026-05-16"},
+    ]
+  },
+  {
+    key:"S8", label:"S8 · 17–31 may", title:"Semana 8", range:"17 – 31 may",
+    days:[
+      {n:"Dom",d:"17 may",k:"2026-05-17"},
+      {n:"Lun",d:"18 may",k:"2026-05-18"},
+      {n:"Mar",d:"19 may",k:"2026-05-19"},
+      {n:"Mié",d:"20 may",k:"2026-05-20"},
+      {n:"Jue",d:"21 may",k:"2026-05-21"},
+      {n:"Vie",d:"22 may",k:"2026-05-22"},
+      {n:"Dom",d:"31 may",k:"2026-05-31"},
+    ]
+  },
+];
+
+// Hábitos con su presencia por día (true = aplica ese día)
+// lun mar mie jue vie sab dom
+const HABITS = [
+  // RUTINA DIARIA (todos los días)
+  { section:"Rutina diaria", emoji:"🛏", name:"Hacer la cama",
+    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
+  { emoji:"📖", name:"Leer (30 min)",
+    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
+  { emoji:"📵", name:"Menos de 2h teléfono",
+    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
+
+  // TRABAJO/ESTUDIO (días laborales)
+  { section:"Trabajo & Estudio", emoji:"🥡", name:"Almuerzo empacado",
+    days:{dom:0,lun:1,mar:1,mie:1,jue:1,vie:1,sab:0} },
+  { emoji:"🏋️", name:"Gym",
+    days:{dom:0,lun:1,mar:1,mie:0,jue:1,vie:1,sab:0} },
+  { emoji:"🔵", name:"Inglés C1",
+    days:{dom:0,lun:1,mar:0,mie:1,jue:0,vie:1,sab:1} },
+  { emoji:"🟣", name:"Francés",
+    days:{dom:0,lun:1,mar:0,mie:1,jue:0,vie:0,sab:1} },
+  { emoji:"🤖", name:"TradeBot / Programación",
+    days:{dom:1,lun:0,mar:0,mie:0,jue:1,vie:0,sab:0} },
+
+  // HOGAR (según calendario)
+  { section:"Hogar", emoji:"🛁", name:"Lavar el baño",
+    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:1,sab:0} },
+  { emoji:"🏠", name:"Organizar apartamento",
+    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:0,sab:1} },
+];
+
+// Días especiales por semana
+const SPECIAL = {
+  S1:  {},
+  S2:  {"2026-04-05":"🧺 Lavar ropa", "2026-04-09":"🛒 Mercado"},
+  S3:  {},
+  S4:  {"2026-04-19":"🧺 Lavar ropa", "2026-04-23":"🛒 Mercado"},
+  S5:  {},
+  S6:  {"2026-05-03":"🧺 Lavar ropa", "2026-05-07":"🛒 Mercado"},
+  S7:  {},
+  S8:  {"2026-05-17":"🧺 Lavar ropa", "2026-05-21":"🛒 Mercado", "2026-05-31":"🧺 Lavar ropa"},
+};
+
+// Lavar ropa especial (dom cada 15 días) y mercado (jue cada 15 días)
+const SPECIAL_HABITS = {
+  "🧺 Lavar ropa": {emoji:"🧺", name:"Lavar ropa"},
+  "🛒 Mercado":    {emoji:"🛒", name:"Ir a hacer mercado"},
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let apiKey = localStorage.getItem('ht2_api') || '';
+let dbId   = localStorage.getItem('ht2_db')  || '';
+let state  = JSON.parse(localStorage.getItem('ht2_state') || '{}');
+let notionIds = JSON.parse(localStorage.getItem('ht2_nids') || '{}');
+let currentWeek = 0;
+let connected = false;
+let syncTimer = null;
+
+const DAY_IDX = {dom:0, lun:1, mar:2, mie:3, jue:4, vie:5, sab:6};
+const DAY_NAMES = ['dom','lun','mar','mie','jue','vie','sab'];
+
+function dayKey(weekDay) {
+  // weekDay is 0=dom, 1=lun...6=sab
+  return DAY_NAMES[weekDay];
+}
+
+function getColor(pct) {
+  if (pct >= 80) return 'var(--teal)';
+  if (pct >= 50) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function habitsForDay(weekKey, dateKey, dayOfWeek) {
+  const dn = DAY_NAMES[dayOfWeek];
+  const list = HABITS.filter(h => h.days[dn]);
+  // Add special habits
+  const sp = SPECIAL[weekKey] || {};
+  if (sp[dateKey]) {
+    list.push(SPECIAL_HABITS[sp[dateKey]]);
+  }
+  return list;
+}
+
+// ── BUILD UI ─────────────────────────────────────────────────────────────────
+function buildTabs() {
+  const el = document.getElementById('weekTabs');
+  el.innerHTML = '';
+  WEEKS.forEach((w,i) => {
+    const t = document.createElement('div');
+    t.className = 'week-tab' + (i===0?' active':'');
+    t.textContent = w.label;
+    t.onclick = () => selectWeek(i);
+    el.appendChild(t);
+  });
+}
+
+function selectWeek(idx) {
+  currentWeek = idx;
+  document.querySelectorAll('.week-tab').forEach((t,i)=>
+    t.classList.toggle('active', i===idx));
+  renderGrid();
+}
+
+function renderGrid() {
+  const week = WEEKS[currentWeek];
+  document.getElementById('weekTitle').textContent = week.title;
+  document.getElementById('weekRange').textContent = week.range;
+
+  const grid = document.getElementById('mainGrid');
+  grid.innerHTML = '';
+
+  // Figure out day-of-week index for each day
+  const dayOfWeeks = week.days.map(d => {
+    const names = ['dom','lun','mar','mie','jue','vie','sab'];
+    // Determine from day name
+    const nm = d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
+    const key = nm.slice(0,3);
+    return map[key] ?? 0;
+  });
+
+  // Get all habits rows needed (union across all days)
+  // We'll show all HABITS + specials
+  const specialForWeek = SPECIAL[week.key] || {};
+  const hasSpecial = Object.keys(specialForWeek).length > 0;
+
+  // Compute per-day habit lists
+  const dayHabits = week.days.map((d,i) => habitsForDay(week.key, d.k, dayOfWeeks[i]));
+
+  // Compute per-day done counts
+  const dayDone  = week.days.map((d,i) => dayHabits[i].filter(h => !!state[`${d.k}|${h.name}`]).length);
+  const dayTotal = week.days.map((d,i) => dayHabits[i].length);
+  const dayPct   = week.days.map((d,i) => dayTotal[i] ? Math.round(dayDone[i]/dayTotal[i]*100) : 0);
+
+  // Header row
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  // Habit label column
+  const th0 = document.createElement('th');
+  th0.style.cssText = 'background:var(--header);border:1px solid var(--border);padding:8px 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;position:sticky;left:0;z-index:15;';
+  th0.textContent = 'Hábito';
+  headRow.appendChild(th0);
+
+  week.days.forEach((d,i) => {
+    const th = document.createElement('th');
+    th.style.cssText = 'background:var(--header);border:1px solid var(--border);min-width:80px;';
+    const pct = dayPct[i];
+    const col = getColor(pct);
+    const circumference = 100;
+    const offset = Math.round(circumference - (pct/100)*circumference);
+    const today = new Date().toISOString().split('T')[0];
+    const isToday = d.k === today;
+
+    th.innerHTML = `
+      <div class="day-head">
+        <div class="day-name-label" style="${isToday?'color:var(--yellow)':''}">${d.n}</div>
+        <div class="day-date-label">${d.d}</div>
+        <div class="day-pct-ring">
+          <svg viewBox="0 0 44 44">
+            <circle class="dr-track" cx="22" cy="22" r="16"/>
+            <circle class="dr-fill" cx="22" cy="22" r="16"
+              style="stroke:${col};stroke-dashoffset:${offset}"/>
+          </svg>
+          <div class="dr-pct" style="color:${col}">${pct}%</div>
+        </div>
+      </div>`;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  grid.appendChild(thead);
+
+  // Body
+  const tbody = document.createElement('tbody');
+  let lastSection = null;
+
+  HABITS.forEach(h => {
+    // Section header
+    if (h.section && h.section !== lastSection) {
+      lastSection = h.section;
+      const sr = document.createElement('tr');
+      sr.className = 'section-row';
+      const td = document.createElement('td');
+      td.colSpan = week.days.length + 1;
+      td.textContent = h.section;
+      sr.appendChild(td);
+      tbody.appendChild(sr);
+    }
+
+    const row = document.createElement('tr');
+
+    // Label cell
+    const labelTd = document.createElement('td');
+    labelTd.className = 'habit-label-col';
+    labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
+    row.appendChild(labelTd);
+
+    // Checkbox cells
+    week.days.forEach((d,i) => {
+      const dn = DAY_NAMES[dayOfWeeks[i]];
+      const applies = !!h.days[dn];
+      const td = document.createElement('td');
+      td.className = 'check-cell' + (applies?'':' empty');
+
+      if (applies) {
+        const sk = `${d.k}|${h.name}`;
+        const done = !!state[sk];
+        td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
+        td.onclick = () => toggle(d.k, h.name, td);
+      } else {
+        td.innerHTML = `<div style="width:20px;height:20px;display:inline-block"></div>`;
+      }
+      row.appendChild(td);
+    });
+
+    tbody.appendChild(row);
+  });
+
+  // Special habits row (lavar ropa / mercado)
+  if (hasSpecial) {
+    // Section header
+    const sr = document.createElement('tr');
+    sr.className = 'section-row';
+    const std = document.createElement('td');
+    std.colSpan = week.days.length + 1;
+    std.textContent = 'Especiales de la semana';
+    sr.appendChild(std);
+    tbody.appendChild(sr);
+
+    Object.entries(specialForWeek).forEach(([dateKey, habitLabel]) => {
+      const sh = SPECIAL_HABITS[habitLabel];
+      const row = document.createElement('tr');
+      const labelTd = document.createElement('td');
+      labelTd.className = 'habit-label-col';
+      labelTd.innerHTML = `<span style="margin-right:6px">${sh.emoji}</span>${sh.name}`;
+      row.appendChild(labelTd);
+
+      week.days.forEach((d,i) => {
+        const td = document.createElement('td');
+        if (d.k === dateKey) {
+          td.className = 'check-cell';
+          const sk = `${d.k}|${sh.name}`;
+          const done = !!state[sk];
+          td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
+          td.onclick = () => toggle(d.k, sh.name, td);
+        } else {
+          td.className = 'check-cell empty';
+          td.innerHTML = `<div style="width:20px;height:20px;display:inline-block"></div>`;
+        }
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
+    });
+  }
+
+  // % row
+  const pctRow = document.createElement('tr');
+  pctRow.className = 'pct-row';
+  const pctLabel = document.createElement('td');
+  pctLabel.className = 'pct-label-cell';
+  pctLabel.textContent = '% del día';
+  pctRow.appendChild(pctLabel);
+
+  week.days.forEach((d,i) => {
+    const td = document.createElement('td');
+    td.style.cssText = 'background:var(--surface);border:1px solid var(--border);text-align:center;padding:8px;';
+    const pct = dayPct[i];
+    const col = getColor(pct);
+    td.innerHTML = `<span class="pct-val" style="color:${col}">${pct}%</span><br>
+      <span style="font-size:10px;color:var(--muted)">${dayDone[i]}/${dayTotal[i]}</span>`;
+    pctRow.appendChild(td);
+  });
+  tbody.appendChild(pctRow);
+  grid.appendChild(tbody);
+
+  // Update overall stats
+  const totalDone  = dayDone.reduce((a,b)=>a+b,0);
+  const totalTotal = dayTotal.reduce((a,b)=>a+b,0);
+  const overallPct = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
+  const perfectDays = dayPct.filter(p=>p===100).length;
+  const col = getColor(overallPct);
+  const circumference = 201;
+  const offset = Math.round(circumference - (overallPct/100)*circumference);
+
+  document.getElementById('ringFill').style.strokeDashoffset = offset;
+  document.getElementById('ringFill').style.stroke = col;
+  document.getElementById('ringPct').textContent = overallPct+'%';
+  document.getElementById('ringPct').style.color = col;
+  document.getElementById('statDone').textContent = totalDone;
+  document.getElementById('statTotal').textContent = totalTotal;
+  document.getElementById('statPerfect').textContent = perfectDays;
+  document.getElementById('progressFill').style.width = overallPct+'%';
+}
+
+// ── TOGGLE ───────────────────────────────────────────────────────────────────
+function toggle(dateKey, habitName, cell) {
+  const sk = `${dateKey}|${habitName}`;
+  state[sk] = !state[sk];
+  const done = state[sk];
+
+  const box = cell.querySelector('.checkbox');
+  box.classList.toggle('done', done);
+  box.textContent = done ? '✓' : '';
+
+  localStorage.setItem('ht2_state', JSON.stringify(state));
+  renderGrid();
+
+  if (connected) {
+    setSyncState('sync','Guardando en Notion...');
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(async () => {
+      await syncToNotion(dateKey, habitName, done);
+      setSyncState('ok','Guardado en Notion ✓');
+    }, 700);
+  }
+}
+
+// ── SYNC STATE ────────────────────────────────────────────────────────────────
+function setSyncState(s, msg) {
+  document.getElementById('sdot').className = 'sdot ' + s;
+  document.getElementById('syncMsg').textContent = msg;
+}
+
+// ── NOTION ────────────────────────────────────────────────────────────────────
+function toggleSetup() {
+  document.getElementById('setupWrap').classList.toggle('show');
+}
+
+async function notionReq(path, method='GET', body=null, key=apiKey) {
+  const proxy = 'https://corsproxy.io/?';
+  const url = proxy + encodeURIComponent('https://api.notion.com/v1/' + path);
+  const opts = {
+    method,
+    headers: {
+      'Authorization': 'Bearer ' + key,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+async function connectNotion() {
+  const key = document.getElementById('apiKey').value.trim();
+  const db  = document.getElementById('dbId').value.trim().replace(/-/g,'');
+  const msg = document.getElementById('setupMsg');
+  const btn = document.getElementById('connectBtn');
+  if (!key || !db) { msg.className='msg err'; msg.textContent='Completa ambos campos.'; return; }
+  btn.disabled = true; btn.textContent = 'Conectando...'; msg.textContent = '';
+  try {
+    const res = await notionReq('databases/'+db, 'GET', null, key);
+    if (res.object === 'error') throw new Error(res.message);
+    apiKey = key; dbId = db;
+    localStorage.setItem('ht2_api', key);
+    localStorage.setItem('ht2_db', db);
+    connected = true;
+    document.getElementById('ndot').className = 'ndot on';
+    document.getElementById('notionLabel').textContent = 'Notion conectado';
+    msg.className='msg ok'; msg.textContent='✓ Conectado. Cargando datos...';
+    document.getElementById('setupWrap').classList.remove('show');
+    await loadNotionData();
+  } catch(e) {
+    msg.className='msg err'; msg.textContent='Error: '+e.message;
+  }
+  btn.disabled = false; btn.textContent = 'Conectar';
+}
+
+async function loadNotionData() {
+  setSyncState('sync','Cargando desde Notion...');
+  try {
+    let pages=[], cursor;
+    do {
+      const body = {page_size:100, ...(cursor?{start_cursor:cursor}:{})};
+      const res = await notionReq('databases/'+dbId+'/query','POST',body);
+      if (res.object==='error') throw new Error(res.message);
+      pages = pages.concat(res.results||[]);
+      cursor = res.has_more ? res.next_cursor : undefined;
+    } while(cursor);
+
+    notionIds = {};
+    for (const p of pages) {
+      const nombre = p.properties?.Nombre?.title?.[0]?.plain_text||'';
+      const fecha  = p.properties?.Fecha?.date?.start||'';
+      const hecho  = p.properties?.Hecho?.checkbox||false;
+      const k = `${fecha}|${nombre}`;
+      notionIds[k] = {id:p.id, hecho};
+      if (!(k in state)) state[k] = hecho;
+    }
+    localStorage.setItem('ht2_nids', JSON.stringify(notionIds));
+    localStorage.setItem('ht2_state', JSON.stringify(state));
+    setSyncState('ok', `Sincronizado · ${pages.length} tareas`);
+    renderGrid();
+  } catch(e) {
+    setSyncState('err','Error: '+e.message);
+  }
+}
+
+async function syncToNotion(dateKey, habitName, done) {
+  const k = `${dateKey}|${habitName}`;
+  const entry = notionIds[k];
+  if (!entry) return;
+  try {
+    await notionReq('pages/'+entry.id,'PATCH',{
+      properties:{Hecho:{checkbox:done}}
+    });
+  } catch(e) { console.warn('Sync error',e); }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  if (apiKey && dbId) {
+    document.getElementById('apiKey').value = apiKey;
+    document.getElementById('dbId').value = dbId;
+    connected = true;
+    document.getElementById('ndot').className = 'ndot on';
+    document.getElementById('notionLabel').textContent = 'Notion conectado';
+    loadNotionData();
+  }
+  buildTabs();
+  renderGrid();
+};
+</script>
+</body>
+</html>
