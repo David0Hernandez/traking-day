@@ -2,935 +2,663 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Habit Tracker 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1b2e">
+<title>My Habits · David</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
-  --bg:       #0f1b2d;
-  --surface:  #162032;
-  --surface2: #1a2840;
-  --surface3: #1f3050;
-  --header:   #0a1525;
-  --border:   #1e3050;
-  --border2:  #2a4060;
-  --teal:     #4ecdc4;
-  --teal-dim: #2a9d8f;
-  --green:    #52b788;
-  --yellow:   #f4a261;
-  --red:      #e76f51;
-  --blue:     #4895ef;
-  --purple:   #7b68ee;
-  --text:     #e8f4f8;
-  --muted:    #8ba8c4;
-  --muted2:   #4a6080;
-  --check-bg: #1a3050;
-  --check-on: #4ecdc4;
+  --bg:      #0d1b2e;
+  --panel:   #111e33;
+  --card:    #162040;
+  --border:  #1a2d4a;
+  --teal:    #00d4aa;
+  --blue:    #4a90e2;
+  --yellow:  #f0a500;
+  --red:     #e74c6c;
+  --green:   #2ecc71;
+  --purple:  #9b59b6;
+  --text:    #d8eaf8;
+  --muted:   #5a7a9a;
+  --muted2:  #1e3050;
+  --box-off: #1a2d4a;
+  --box-dim: #1e6a50;
+  --box-mid: #27ae60;
+  --box-on:  #00d4aa;
+  --safe-b:  env(safe-area-inset-bottom, 0px);
 }
+html, body { background: var(--bg); color: var(--text); height: 100%; overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-  min-height: 100vh;
-  overflow-x: auto;
-}
+.app { display: flex; flex-direction: column; height: 100dvh; }
 
 /* ── TOPBAR ── */
 .topbar {
-  background: var(--header);
-  border-bottom: 2px solid var(--border2);
-  padding: 14px 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 200;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
-}
-
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon {
-  width: 36px; height: 36px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--teal), var(--blue));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-.brand-title { font-size: 18px; font-weight: 700; color: var(--text); }
-.brand-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
-
-.topbar-right { display: flex; gap: 10px; align-items: center; }
-
-.notion-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface2); border: 1px solid var(--border2);
-  border-radius: 8px; padding: 8px 14px; cursor: pointer;
-  color: var(--muted); font-size: 12px; font-weight: 500;
-  transition: all 0.2s;
-}
-.notion-btn:hover { border-color: var(--teal); color: var(--teal); }
-.ndot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted2); transition: all 0.3s; }
-.ndot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
-
-/* ── LAYOUT ── */
-.app { padding: 0; }
-
-/* ── WEEK TABS ── */
-.week-tabs {
-  background: var(--header);
+  background: #09131f;
+  padding: 48px 16px 12px;
   border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex; gap: 2px; overflow-x: auto;
+  flex-shrink: 0;
 }
-.week-tab {
-  padding: 12px 18px; cursor: pointer; white-space: nowrap;
-  color: var(--muted); font-size: 12px; font-weight: 500;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+.topbar-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+.title span { color: var(--teal); }
+.notion-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 6px 12px;
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  cursor: pointer;
 }
-.week-tab:hover { color: var(--text); }
-.week-tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.notion-btn.on { border-color: var(--teal); color: var(--teal); }
+.ndot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted2); }
+.ndot.on { background: var(--teal); box-shadow: 0 0 6px var(--teal); }
+
+/* week pills */
+.pills { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.pills::-webkit-scrollbar { display: none; }
+.pill {
+  flex-shrink: 0; padding: 5px 12px; border-radius: 14px;
+  background: var(--card); border: 1px solid var(--border);
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  cursor: pointer; white-space: nowrap;
+}
+.pill.active { background: var(--teal); border-color: var(--teal); color: #0d1b2e; }
+
+/* ── MAIN SCROLL ── */
+.main { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+.main::-webkit-scrollbar { display: none; }
 
 /* ── OVERALL HEADER ── */
-.overall-bar {
-  background: var(--surface);
+.week-header {
+  padding: 14px 16px 10px;
+  display: flex; align-items: center; gap: 14px;
+  background: var(--panel);
   border-bottom: 1px solid var(--border);
-  padding: 16px 24px;
-  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+}
+.week-ring { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.week-ring svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+.wr-track { fill: none; stroke: var(--muted2); stroke-width: 6; }
+.wr-fill { fill: none; stroke: var(--teal); stroke-width: 6; stroke-linecap: round;
+  stroke-dasharray: 138; stroke-dashoffset: 138;
+  transition: stroke-dashoffset .7s cubic-bezier(.4,0,.2,1); }
+.wr-pct { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  font-size: 12px; font-weight: 800; }
+.week-info { flex: 1; }
+.week-name { font-size: 15px; font-weight: 700; }
+.week-range { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.week-bar-wrap { background: var(--muted2); border-radius: 3px; height: 4px; margin-top: 8px; overflow: hidden; }
+.week-bar { height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue));
+  border-radius: 3px; transition: width .6s ease; }
+.week-badges { display: flex; gap: 8px; flex-shrink: 0; }
+.badge { background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 6px 10px; text-align: center; }
+.badge-val { font-size: 17px; font-weight: 800; color: var(--teal); }
+.badge-lbl { font-size: 9px; color: var(--muted); margin-top: 1px; }
+
+/* ── GRID SECTION ── */
+.grid-section { padding: 12px 0 0; }
+
+/* Day columns header */
+.day-cols-wrap { padding-left: 148px; overflow-x: hidden; }
+.day-cols { display: flex; gap: 3px; }
+.day-col-head {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding-bottom: 6px;
+}
+.day-col-name { font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em; }
+.day-col-date { font-size: 9px; color: var(--muted2); margin-top: 1px; }
+.day-col-head.today .day-col-name { color: var(--teal); }
+.day-col-head.today .day-col-date { color: var(--teal); opacity: .7; }
+
+/* Section label */
+.section-header {
+  padding: 8px 16px 4px;
+  font-size: 9px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em;
+  background: #0a1525;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
-.overall-title { font-size: 16px; font-weight: 700; color: var(--text); }
-.overall-range { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-.overall-ring {
-  position: relative; width: 72px; height: 72px; flex-shrink: 0;
-}
-.overall-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
-.ring-track { fill: none; stroke: var(--border2); stroke-width: 7; }
-.ring-fill {
-  fill: none; stroke: var(--teal); stroke-width: 7;
-  stroke-linecap: round;
-  stroke-dasharray: 201;
-  stroke-dashoffset: 201;
-  transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1);
-}
-.ring-pct {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  font-size: 14px; font-weight: 700; color: var(--teal);
+/* Habit row */
+.habit-row {
+  display: flex; align-items: center;
+  border-bottom: 1px solid var(--border);
+  min-height: 40px;
 }
 
-.overall-stats { display: flex; gap: 16px; flex-wrap: wrap; }
-.stat-box {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 16px; text-align: center; min-width: 80px;
+.habit-label {
+  width: 148px; flex-shrink: 0;
+  padding: 0 10px 0 16px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; color: var(--text);
+  line-height: 1.2;
 }
-.stat-val { font-size: 22px; font-weight: 700; color: var(--teal); }
-.stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase;
-  letter-spacing: 0.08em; margin-top: 2px; }
+.habit-emoji { font-size: 14px; flex-shrink: 0; }
+.habit-name { flex: 1; }
 
-.progress-track {
-  flex: 1; min-width: 200px;
-  background: var(--surface3); border-radius: 4px; height: 6px; overflow: hidden;
+/* boxes row */
+.boxes { display: flex; gap: 3px; padding: 5px 0; flex: 1; }
+.box {
+  flex: 1; min-width: 0;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--box-off);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  max-width: 36px; max-height: 36px;
 }
-.progress-fill {
-  height: 100%; background: linear-gradient(90deg, var(--teal), var(--blue));
-  border-radius: 4px; transition: width 0.8s ease;
-}
+.box:active { transform: scale(.88); }
+.box.na { background: #0a1420; cursor: default; opacity: .3; }
+.box.d1 { background: var(--box-dim); }
+.box.d2 { background: #1e8a5a; }
+.box.d3 { background: var(--box-mid); }
+.box.d4 { background: var(--box-on); }
+/* checkmark inside */
+.box.done::after { content: '✓'; color: rgba(0,0,0,.6); font-size: 11px; font-weight: 900; }
 
-/* ── NOTION SETUP ── */
-.setup-wrap {
-  background: var(--surface);
-  border: 1px solid var(--border2);
-  border-radius: 12px;
-  margin: 20px 24px;
-  padding: 24px;
-  display: none;
+/* pct row */
+.pct-row {
+  display: flex; align-items: center;
+  border-top: 2px solid var(--border);
+  padding: 6px 0;
+  background: #09131f;
 }
-.setup-wrap.show { display: block; }
-.setup-wrap h3 { font-size: 14px; font-weight: 600; color: var(--teal); margin-bottom: 6px; }
-.setup-wrap p { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.6; }
-.setup-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
-.setup-step {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 12px; display: flex; gap: 10px;
+.pct-label { width: 148px; flex-shrink: 0;
+  padding: 0 10px 0 16px;
+  font-size: 10px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; }
+.pct-vals { display: flex; gap: 3px; flex: 1; }
+.pct-val {
+  flex: 1; min-width: 0; text-align: center;
+  font-size: 10px; font-weight: 700;
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  max-width: 36px;
 }
-.sn {
-  width: 22px; height: 22px; border-radius: 50%; background: var(--teal-dim);
+.pct-num { font-size: 11px; font-weight: 800; }
+.pct-sub { font-size: 8px; color: var(--muted); }
+
+/* spacer */
+.spacer { height: calc(16px + var(--safe-b)); }
+
+/* ── NOTION SHEET ── */
+.overlay { position: fixed; inset: 0; z-index: 900;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+  display: none; align-items: flex-end; }
+.overlay.show { display: flex; }
+.sheet {
+  background: var(--panel); border-radius: 22px 22px 0 0;
+  padding: 20px 18px calc(20px + var(--safe-b));
+  width: 100%; max-height: 85vh; overflow-y: auto;
+}
+.handle { width: 36px; height: 4px; border-radius: 2px;
+  background: var(--muted2); margin: 0 auto 18px; }
+.sheet h2 { font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+.sheet p { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+.step { display: flex; gap: 10px; margin-bottom: 10px;
+  background: var(--card); border-radius: 12px; padding: 12px; }
+.sn { width: 22px; height: 22px; border-radius: 50%; background: var(--blue);
   color: #fff; font-size: 10px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .st { font-size: 12px; color: var(--muted); line-height: 1.6; }
 .st strong { color: var(--text); }
 .st a { color: var(--teal); text-decoration: none; }
-.st code {
-  background: var(--bg); border: 1px solid var(--border2); border-radius: 3px;
-  padding: 1px 5px; font-size: 11px; color: var(--yellow);
+.st code { background: var(--bg); border: 1px solid var(--border); border-radius: 3px;
+  padding: 1px 4px; font-size: 10px; color: var(--yellow); }
+.sheet input {
+  width: 100%; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 14px; color: var(--text); font-size: 13px;
+  outline: none; margin-bottom: 8px; -webkit-appearance: none;
 }
-.input-row { display: flex; gap: 8px; flex-wrap: wrap; }
-input[type=text], input[type=password] {
-  flex: 1; min-width: 180px;
-  background: var(--surface2); border: 1px solid var(--border2);
-  border-radius: 7px; padding: 9px 12px;
-  color: var(--text); font-size: 12px; outline: none;
-  transition: border-color 0.2s;
-}
-input:focus { border-color: var(--teal); }
-input::placeholder { color: var(--muted2); }
-.btn {
-  padding: 9px 18px; border-radius: 7px; border: none;
-  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-}
-.btn-teal { background: var(--teal); color: #0f1b2d; }
-.btn-teal:hover { background: #5de8df; }
-.btn-teal:disabled { opacity: 0.5; cursor: not-allowed; }
-.msg { margin-top: 8px; font-size: 12px; }
-.msg.ok { color: var(--green); }
-.msg.err { color: var(--red); }
+.sheet input:focus { border-color: var(--teal); }
+.sheet input::placeholder { color: var(--muted2); }
+.sbtn { width: 100%; padding: 15px; border-radius: 13px; border: none;
+  background: var(--teal); color: #0d1b2e; font-size: 15px; font-weight: 800;
+  cursor: pointer; margin-top: 4px; }
+.sbtn:disabled { opacity: .5; }
+.smsg { font-size: 12px; margin-top: 8px; text-align: center; }
+.smsg.ok { color: var(--teal); } .smsg.err { color: var(--red); }
 
-/* ── MAIN GRID ── */
-.grid-wrap { overflow-x: auto; padding: 0; }
-
-.habits-grid {
-  min-width: 700px;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-/* Header row with day names */
-.grid-head th {
-  background: var(--header);
-  padding: 0;
-  border: 1px solid var(--border);
-  position: sticky; top: 0; z-index: 10;
-}
-
-.day-head {
-  display: flex; flex-direction: column; align-items: center;
-  padding: 12px 8px; gap: 4px;
-}
-.day-name-label {
-  font-size: 12px; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--teal);
-}
-.day-date-label { font-size: 10px; color: var(--muted); }
-
-.day-pct-ring { position: relative; width: 44px; height: 44px; }
-.day-pct-ring svg { width: 44px; height: 44px; transform: rotate(-90deg); }
-.dr-track { fill: none; stroke: var(--border2); stroke-width: 4; }
-.dr-fill {
-  fill: none; stroke-width: 4; stroke-linecap: round;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  transition: stroke-dashoffset 0.6s ease;
-}
-.dr-pct {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-  font-size: 10px; font-weight: 700;
-}
-
-/* Left label column */
-.habit-label-col {
-  background: var(--surface);
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  white-space: nowrap;
-  font-size: 12px; font-weight: 500; color: var(--text);
-  position: sticky; left: 0; z-index: 5;
-  min-width: 160px;
-}
-
-/* Checkbox cells */
-.check-cell {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  text-align: center; vertical-align: middle;
-  padding: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.check-cell:hover { background: var(--surface3); }
-.check-cell.empty { background: var(--surface); cursor: default; opacity: 0.3; }
-
-.checkbox {
-  width: 20px; height: 20px; border-radius: 5px;
-  border: 1.5px solid var(--muted2);
-  background: var(--check-bg);
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: all 0.2s; cursor: pointer;
-  font-size: 12px; font-weight: 700;
-}
-.checkbox.done {
-  background: var(--teal); border-color: var(--teal);
-  color: #0f1b2d;
-}
-
-/* Section rows */
-.section-row td {
-  background: var(--header);
-  padding: 8px 14px;
-  font-size: 10px; font-weight: 700; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 0.12em;
-  border: 1px solid var(--border);
-}
-
-/* Pct row */
-.pct-row td {
-  background: var(--surface);
-  padding: 8px;
-  border: 1px solid var(--border);
-  text-align: center;
-}
-.pct-label-cell {
-  background: var(--surface);
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  font-size: 11px; font-weight: 600; color: var(--muted);
-  position: sticky; left: 0; z-index: 5;
-}
-.pct-val {
-  font-size: 13px; font-weight: 700;
-}
-
-/* Sync bar */
-.sync-bar {
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  padding: 8px 24px;
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11px; color: var(--muted);
-}
-.sdot {
-  width: 6px; height: 6px; border-radius: 50%; background: var(--muted2);
-}
-.sdot.sync { background: var(--yellow); animation: blink 1s infinite; }
-.sdot.ok   { background: var(--green); }
-.sdot.err  { background: var(--red); }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-@media (max-width: 600px) {
-  .habit-label-col { min-width: 120px; font-size: 11px; padding: 8px; }
-  .overall-bar { gap: 12px; }
-}
+/* ── TOAST ── */
+.toast { position: fixed; bottom: calc(18px + var(--safe-b)); left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 18px; padding: 9px 18px;
+  font-size: 12px; font-weight: 600; color: var(--teal);
+  transition: transform .25s ease; z-index: 800; white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
+<div class="app">
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="brand">
-    <div class="brand-icon">📊</div>
-    <div>
-      <div class="brand-title">Habit Tracker 2026</div>
-      <div class="brand-sub">ABR – MAY · David</div>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="title">My <span>Habits</span></div>
+      <div class="notion-btn" id="notionBtn" onclick="openSheet()">
+        <div class="ndot" id="ndot"></div>
+        <span id="nlabel">Notion</span>
+      </div>
     </div>
+    <div class="pills" id="pills"></div>
   </div>
-  <div class="topbar-right">
-    <div class="notion-btn" onclick="toggleSetup()">
-      <div class="ndot" id="ndot"></div>
-      <span id="notionLabel">Conectar Notion</span>
-    </div>
+
+  <!-- MAIN -->
+  <div class="main" id="main"></div>
+</div>
+
+<!-- NOTION SHEET -->
+<div class="overlay" id="overlay" onclick="closeOutside(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <h2>⚡ Conectar Notion</h2>
+    <p>Vincula el tracker con tu base <strong>📆 Agenda ABR–MAY 2026</strong>.</p>
+    <div class="step"><div class="sn">1</div>
+      <div class="st">Ve a <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a>, crea integración <strong>"Habit Tracker"</strong> y copia el token <code>ntn_...</code></div></div>
+    <div class="step"><div class="sn">2</div>
+      <div class="st">Abre tu base <strong>📆 Agenda ABR–MAY 2026</strong> → <code>···</code> → <strong>Connections</strong> → agrega "Habit Tracker"</div></div>
+    <div class="step"><div class="sn">3</div>
+      <div class="st">El Database ID está en la URL: <code>notion.so/<strong>xxxxxxxx…</strong>?v=…</code></div></div>
+    <input type="password" id="iToken" placeholder="Token (ntn_… o secret_…)" autocomplete="off"/>
+    <input type="text"     id="iDb"    placeholder="Database ID (32 caracteres)" autocomplete="off"/>
+    <button class="sbtn" id="sbtn" onclick="connectNotion()">Conectar</button>
+    <div class="smsg" id="smsg"></div>
   </div>
 </div>
 
-<!-- NOTION SETUP -->
-<div class="setup-wrap" id="setupWrap">
-  <h3>⚡ Vincular con Notion</h3>
-  <p>Conecta el tracker con tu base de datos <strong>📆 Agenda ABR–MAY 2026</strong> en Notion. Solo necesitas hacer esto una vez.</p>
-  <div class="setup-steps">
-    <div class="setup-step">
-      <div class="sn">1</div>
-      <div class="st">Ve a <a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a>, crea una integración llamada <strong>"Habit Tracker"</strong> y copia el token <code>ntn_...</code></div>
-    </div>
-    <div class="setup-step">
-      <div class="sn">2</div>
-      <div class="st">Abre tu base <strong>📆 Agenda ABR–MAY 2026</strong> → <code>···</code> → <strong>Connections</strong> → agrega "Habit Tracker"</div>
-    </div>
-    <div class="setup-step">
-      <div class="sn">3</div>
-      <div class="st">El Database ID está en la URL: <code>notion.so/<strong>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</strong>?v=...</code></div>
-    </div>
-  </div>
-  <div class="input-row" style="margin-bottom:8px">
-    <input type="password" id="apiKey" placeholder="Token (ntn_... o secret_...)"/>
-  </div>
-  <div class="input-row">
-    <input type="text" id="dbId" placeholder="Database ID (32 caracteres)"/>
-    <button class="btn btn-teal" id="connectBtn" onclick="connectNotion()">Conectar</button>
-  </div>
-  <div class="msg" id="setupMsg"></div>
-</div>
-
-<!-- WEEK TABS -->
-<div class="week-tabs" id="weekTabs"></div>
-
-<!-- SYNC BAR -->
-<div class="sync-bar">
-  <div class="sdot" id="sdot"></div>
-  <span id="syncMsg">Sin conexión — cambios guardados localmente</span>
-</div>
-
-<!-- OVERALL BAR -->
-<div class="overall-bar">
-  <div>
-    <div class="overall-title" id="weekTitle">Semana 1</div>
-    <div class="overall-range" id="weekRange">29 mar – 4 abr</div>
-  </div>
-  <div class="overall-ring">
-    <svg viewBox="0 0 72 72">
-      <circle class="ring-track" cx="36" cy="36" r="32"/>
-      <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="32"/>
-    </svg>
-    <div class="ring-pct" id="ringPct">0%</div>
-  </div>
-  <div class="overall-stats">
-    <div class="stat-box">
-      <div class="stat-val" id="statDone">0</div>
-      <div class="stat-lbl">Hechas</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-val" id="statTotal">0</div>
-      <div class="stat-lbl">Total</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-val" id="statPerfect">0</div>
-      <div class="stat-lbl">Días 100%</div>
-    </div>
-  </div>
-  <div style="flex:1; min-width:150px;">
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Progreso semanal</div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
-  </div>
-</div>
-
-<!-- MAIN GRID -->
-<div class="grid-wrap">
-  <table class="habits-grid" id="mainGrid"></table>
-</div>
+<!-- TOAST -->
+<div class="toast" id="toast">✓ Guardado en Notion</div>
 
 <script>
-// ── DATA ────────────────────────────────────────────────────────────────────
+// ─── DATA ────────────────────────────────────────────────────────────────────
 const WEEKS = [
-  {
-    key:"S1", label:"S1 · 29 mar–4 abr", title:"Semana 1", range:"29 mar – 4 abr",
-    days:[
-      {n:"Dom",d:"29 mar",k:"2026-03-29"},
-      {n:"Lun",d:"30 mar",k:"2026-03-30"},
-      {n:"Mar",d:"31 mar",k:"2026-03-31"},
-      {n:"Mié",d:"1 abr", k:"2026-04-01"},
-      {n:"Jue",d:"2 abr", k:"2026-04-02"},
-      {n:"Vie",d:"3 abr", k:"2026-04-03"},
-      {n:"Sáb",d:"4 abr", k:"2026-04-04"},
-    ]
-  },
-  {
-    key:"S2", label:"S2 · 5–11 abr", title:"Semana 2", range:"5 – 11 abr",
-    days:[
-      {n:"Dom",d:"5 abr", k:"2026-04-05"},
-      {n:"Lun",d:"6 abr", k:"2026-04-06"},
-      {n:"Mar",d:"7 abr", k:"2026-04-07"},
-      {n:"Mié",d:"8 abr", k:"2026-04-08"},
-      {n:"Jue",d:"9 abr", k:"2026-04-09"},
-      {n:"Vie",d:"10 abr",k:"2026-04-10"},
-      {n:"Sáb",d:"11 abr",k:"2026-04-11"},
-    ]
-  },
-  {
-    key:"S3", label:"S3 · 12–18 abr", title:"Semana 3", range:"12 – 18 abr",
-    days:[
-      {n:"Dom",d:"12 abr",k:"2026-04-12"},
-      {n:"Lun",d:"13 abr",k:"2026-04-13"},
-      {n:"Mar",d:"14 abr",k:"2026-04-14"},
-      {n:"Mié",d:"15 abr",k:"2026-04-15"},
-      {n:"Jue",d:"16 abr",k:"2026-04-16"},
-      {n:"Vie",d:"17 abr",k:"2026-04-17"},
-      {n:"Sáb",d:"18 abr",k:"2026-04-18"},
-    ]
-  },
-  {
-    key:"S4", label:"S4 · 19–25 abr", title:"Semana 4", range:"19 – 25 abr",
-    days:[
-      {n:"Dom",d:"19 abr",k:"2026-04-19"},
-      {n:"Lun",d:"20 abr",k:"2026-04-20"},
-      {n:"Mar",d:"21 abr",k:"2026-04-21"},
-      {n:"Mié",d:"22 abr",k:"2026-04-22"},
-      {n:"Jue",d:"23 abr",k:"2026-04-23"},
-      {n:"Vie",d:"24 abr",k:"2026-04-24"},
-      {n:"Sáb",d:"25 abr",k:"2026-04-25"},
-    ]
-  },
-  {
-    key:"S5", label:"S5 · 26 abr–2 may", title:"Semana 5", range:"26 abr – 2 may",
-    days:[
-      {n:"Dom",d:"26 abr",k:"2026-04-26"},
-      {n:"Lun",d:"27 abr",k:"2026-04-27"},
-      {n:"Mar",d:"28 abr",k:"2026-04-28"},
-      {n:"Mié",d:"29 abr",k:"2026-04-29"},
-      {n:"Jue",d:"30 abr",k:"2026-04-30"},
-      {n:"Vie",d:"1 may", k:"2026-05-01"},
-      {n:"Sáb",d:"2 may", k:"2026-05-02"},
-    ]
-  },
-  {
-    key:"S6", label:"S6 · 3–9 may", title:"Semana 6", range:"3 – 9 may",
-    days:[
-      {n:"Dom",d:"3 may", k:"2026-05-03"},
-      {n:"Lun",d:"4 may", k:"2026-05-04"},
-      {n:"Mar",d:"5 may", k:"2026-05-05"},
-      {n:"Mié",d:"6 may", k:"2026-05-06"},
-      {n:"Jue",d:"7 may", k:"2026-05-07"},
-      {n:"Vie",d:"8 may", k:"2026-05-08"},
-      {n:"Sáb",d:"9 may", k:"2026-05-09"},
-    ]
-  },
-  {
-    key:"S7", label:"S7 · 10–16 may", title:"Semana 7", range:"10 – 16 may",
-    days:[
-      {n:"Dom",d:"10 may",k:"2026-05-10"},
-      {n:"Lun",d:"11 may",k:"2026-05-11"},
-      {n:"Mar",d:"12 may",k:"2026-05-12"},
-      {n:"Mié",d:"13 may",k:"2026-05-13"},
-      {n:"Jue",d:"14 may",k:"2026-05-14"},
-      {n:"Vie",d:"15 may",k:"2026-05-15"},
-      {n:"Sáb",d:"16 may",k:"2026-05-16"},
-    ]
-  },
-  {
-    key:"S8", label:"S8 · 17–31 may", title:"Semana 8", range:"17 – 31 may",
-    days:[
-      {n:"Dom",d:"17 may",k:"2026-05-17"},
-      {n:"Lun",d:"18 may",k:"2026-05-18"},
-      {n:"Mar",d:"19 may",k:"2026-05-19"},
-      {n:"Mié",d:"20 may",k:"2026-05-20"},
-      {n:"Jue",d:"21 may",k:"2026-05-21"},
-      {n:"Vie",d:"22 may",k:"2026-05-22"},
-      {n:"Dom",d:"31 may",k:"2026-05-31"},
-    ]
-  },
+  {key:"S1",label:"S1",title:"Semana 1",range:"29 mar – 4 abr",days:[
+    {n:"Dom",d:"29/3",k:"2026-03-29",dow:0},{n:"Lun",d:"30/3",k:"2026-03-30",dow:1},
+    {n:"Mar",d:"31/3",k:"2026-03-31",dow:2},{n:"Mié",d:"1/4", k:"2026-04-01",dow:3},
+    {n:"Jue",d:"2/4", k:"2026-04-02",dow:4},{n:"Vie",d:"3/4", k:"2026-04-03",dow:5},
+    {n:"Sáb",d:"4/4", k:"2026-04-04",dow:6}]},
+  {key:"S2",label:"S2",title:"Semana 2",range:"5 – 11 abr",days:[
+    {n:"Dom",d:"5/4", k:"2026-04-05",dow:0},{n:"Lun",d:"6/4", k:"2026-04-06",dow:1},
+    {n:"Mar",d:"7/4", k:"2026-04-07",dow:2},{n:"Mié",d:"8/4", k:"2026-04-08",dow:3},
+    {n:"Jue",d:"9/4", k:"2026-04-09",dow:4},{n:"Vie",d:"10/4",k:"2026-04-10",dow:5},
+    {n:"Sáb",d:"11/4",k:"2026-04-11",dow:6}]},
+  {key:"S3",label:"S3",title:"Semana 3",range:"12 – 18 abr",days:[
+    {n:"Dom",d:"12/4",k:"2026-04-12",dow:0},{n:"Lun",d:"13/4",k:"2026-04-13",dow:1},
+    {n:"Mar",d:"14/4",k:"2026-04-14",dow:2},{n:"Mié",d:"15/4",k:"2026-04-15",dow:3},
+    {n:"Jue",d:"16/4",k:"2026-04-16",dow:4},{n:"Vie",d:"17/4",k:"2026-04-17",dow:5},
+    {n:"Sáb",d:"18/4",k:"2026-04-18",dow:6}]},
+  {key:"S4",label:"S4",title:"Semana 4",range:"19 – 25 abr",days:[
+    {n:"Dom",d:"19/4",k:"2026-04-19",dow:0},{n:"Lun",d:"20/4",k:"2026-04-20",dow:1},
+    {n:"Mar",d:"21/4",k:"2026-04-21",dow:2},{n:"Mié",d:"22/4",k:"2026-04-22",dow:3},
+    {n:"Jue",d:"23/4",k:"2026-04-23",dow:4},{n:"Vie",d:"24/4",k:"2026-04-24",dow:5},
+    {n:"Sáb",d:"25/4",k:"2026-04-25",dow:6}]},
+  {key:"S5",label:"S5",title:"Semana 5",range:"26 abr – 2 may",days:[
+    {n:"Dom",d:"26/4",k:"2026-04-26",dow:0},{n:"Lun",d:"27/4",k:"2026-04-27",dow:1},
+    {n:"Mar",d:"28/4",k:"2026-04-28",dow:2},{n:"Mié",d:"29/4",k:"2026-04-29",dow:3},
+    {n:"Jue",d:"30/4",k:"2026-04-30",dow:4},{n:"Vie",d:"1/5", k:"2026-05-01",dow:5},
+    {n:"Sáb",d:"2/5", k:"2026-05-02",dow:6}]},
+  {key:"S6",label:"S6",title:"Semana 6",range:"3 – 9 may",days:[
+    {n:"Dom",d:"3/5", k:"2026-05-03",dow:0},{n:"Lun",d:"4/5", k:"2026-05-04",dow:1},
+    {n:"Mar",d:"5/5", k:"2026-05-05",dow:2},{n:"Mié",d:"6/5", k:"2026-05-06",dow:3},
+    {n:"Jue",d:"7/5", k:"2026-05-07",dow:4},{n:"Vie",d:"8/5", k:"2026-05-08",dow:5},
+    {n:"Sáb",d:"9/5", k:"2026-05-09",dow:6}]},
+  {key:"S7",label:"S7",title:"Semana 7",range:"10 – 16 may",days:[
+    {n:"Dom",d:"10/5",k:"2026-05-10",dow:0},{n:"Lun",d:"11/5",k:"2026-05-11",dow:1},
+    {n:"Mar",d:"12/5",k:"2026-05-12",dow:2},{n:"Mié",d:"13/5",k:"2026-05-13",dow:3},
+    {n:"Jue",d:"14/5",k:"2026-05-14",dow:4},{n:"Vie",d:"15/5",k:"2026-05-15",dow:5},
+    {n:"Sáb",d:"16/5",k:"2026-05-16",dow:6}]},
+  {key:"S8",label:"S8",title:"Semana 8",range:"17 – 31 may",days:[
+    {n:"Dom",d:"17/5",k:"2026-05-17",dow:0},{n:"Lun",d:"18/5",k:"2026-05-18",dow:1},
+    {n:"Mar",d:"19/5",k:"2026-05-19",dow:2},{n:"Mié",d:"20/5",k:"2026-05-20",dow:3},
+    {n:"Jue",d:"21/5",k:"2026-05-21",dow:4},{n:"Vie",d:"22/5",k:"2026-05-22",dow:5},
+    {n:"Dom",d:"31/5",k:"2026-05-31",dow:0}]},
 ];
 
-// Hábitos con su presencia por día (true = aplica ese día)
-// lun mar mie jue vie sab dom
-const HABITS = [
-  // RUTINA DIARIA (todos los días)
-  { section:"Rutina diaria", emoji:"🛏", name:"Hacer la cama",
-    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
-  { emoji:"📖", name:"Leer (30 min)",
-    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
-  { emoji:"📵", name:"Menos de 2h teléfono",
-    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
-
-  // TRABAJO/ESTUDIO (días laborales)
-  { section:"Trabajo & Estudio", emoji:"🥡", name:"Almuerzo empacado",
-    days:{dom:0,lun:1,mar:1,mie:1,jue:1,vie:1,sab:0} },
-  { emoji:"🏋️", name:"Gym",
-    days:{dom:0,lun:1,mar:1,mie:0,jue:1,vie:1,sab:0} },
-  { emoji:"🔵", name:"Inglés C1",
-    days:{dom:0,lun:1,mar:0,mie:1,jue:0,vie:1,sab:1} },
-  { emoji:"🟣", name:"Francés",
-    days:{dom:0,lun:1,mar:0,mie:1,jue:0,vie:0,sab:1} },
-  { emoji:"🤖", name:"TradeBot / Programación",
-    days:{dom:1,lun:0,mar:0,mie:0,jue:1,vie:0,sab:0} },
-
-  // HOGAR (según calendario)
-  { section:"Hogar", emoji:"🛁", name:"Lavar el baño",
-    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:1,sab:0} },
-  { emoji:"🏠", name:"Organizar apartamento",
-    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:0,sab:1} },
+const SECTIONS = [
+  {label:"Rutina diaria", habits:[
+    {e:"🛏",n:"Hacer la cama",      days:[0,1,2,3,4,5,6]},
+    {e:"📖",n:"Leer (30 min)",      days:[0,1,2,3,4,5,6]},
+    {e:"📵",n:"Menos de 2h teléfono",days:[0,1,2,3,4,5,6]},
+  ]},
+  {label:"Trabajo & Estudio", habits:[
+    {e:"🥡",n:"Almuerzo empacado",  days:[1,2,3,4,5]},
+    {e:"🏋️",n:"Gym",               days:[1,2,4,5]},
+    {e:"🔵",n:"Inglés C1",          days:[1,3,5,6]},
+    {e:"🟣",n:"Francés",            days:[1,3,6]},
+    {e:"🤖",n:"TradeBot",           days:[0,4]},
+  ]},
+  {label:"Hogar", habits:[
+    {e:"🛁",n:"Lavar el baño",      days:[5]},
+    {e:"🏠",n:"Organizar apto",     days:[6]},
+  ]},
 ];
 
-// Días especiales por semana
-const SPECIAL = {
-  S1:  {},
-  S2:  {"2026-04-05":"🧺 Lavar ropa", "2026-04-09":"🛒 Mercado"},
-  S3:  {},
-  S4:  {"2026-04-19":"🧺 Lavar ropa", "2026-04-23":"🛒 Mercado"},
-  S5:  {},
-  S6:  {"2026-05-03":"🧺 Lavar ropa", "2026-05-07":"🛒 Mercado"},
-  S7:  {},
-  S8:  {"2026-05-17":"🧺 Lavar ropa", "2026-05-21":"🛒 Mercado", "2026-05-31":"🧺 Lavar ropa"},
+const SPECIALS = {
+  S2:{"2026-04-05":{e:"🧺",n:"Lavar ropa"},"2026-04-09":{e:"🛒",n:"Mercado"}},
+  S4:{"2026-04-19":{e:"🧺",n:"Lavar ropa"},"2026-04-23":{e:"🛒",n:"Mercado"}},
+  S6:{"2026-05-03":{e:"🧺",n:"Lavar ropa"},"2026-05-07":{e:"🛒",n:"Mercado"}},
+  S8:{"2026-05-17":{e:"🧺",n:"Lavar ropa"},"2026-05-21":{e:"🛒",n:"Mercado"},"2026-05-31":{e:"🧺",n:"Lavar ropa"}},
 };
 
-// Lavar ropa especial (dom cada 15 días) y mercado (jue cada 15 días)
-const SPECIAL_HABITS = {
-  "🧺 Lavar ropa": {emoji:"🧺", name:"Lavar ropa"},
-  "🛒 Mercado":    {emoji:"🛒", name:"Ir a hacer mercado"},
-};
-
-// ── STATE ────────────────────────────────────────────────────────────────────
-let apiKey = localStorage.getItem('ht2_api') || '';
-let dbId   = localStorage.getItem('ht2_db')  || '';
-let state  = JSON.parse(localStorage.getItem('ht2_state') || '{}');
-let notionIds = JSON.parse(localStorage.getItem('ht2_nids') || '{}');
-let currentWeek = 0;
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let apiKey    = localStorage.getItem('ht_api')   || '';
+let dbId      = localStorage.getItem('ht_db')    || '';
+let state     = JSON.parse(localStorage.getItem('ht_state') || '{}');
+let nIds      = JSON.parse(localStorage.getItem('ht_nids')  || '{}');
 let connected = false;
+let curWeek   = 0;
 let syncTimer = null;
+const TODAY   = new Date().toISOString().split('T')[0];
 
-const DAY_IDX = {dom:0, lun:1, mar:2, mie:3, jue:4, vie:5, sab:6};
-const DAY_NAMES = ['dom','lun','mar','mie','jue','vie','sab'];
-
-function dayKey(weekDay) {
-  // weekDay is 0=dom, 1=lun...6=sab
-  return DAY_NAMES[weekDay];
+function col(pct) {
+  if (pct === 0)   return '#1a2d4a';
+  if (pct <= 33)   return '#1a5a40';
+  if (pct <= 66)   return '#1e8a5a';
+  if (pct < 100)   return '#27ae60';
+  return '#00d4aa';
+}
+function textCol(pct) {
+  if (pct === 0)   return '#5a7a9a';
+  if (pct < 80)    return '#f0a500';
+  return '#00d4aa';
 }
 
-function getColor(pct) {
-  if (pct >= 80) return 'var(--teal)';
-  if (pct >= 50) return 'var(--yellow)';
-  return 'var(--red)';
-}
-
-function habitsForDay(weekKey, dateKey, dayOfWeek) {
-  const dn = DAY_NAMES[dayOfWeek];
-  const list = HABITS.filter(h => h.days[dn]);
-  // Add special habits
-  const sp = SPECIAL[weekKey] || {};
-  if (sp[dateKey]) {
-    list.push(SPECIAL_HABITS[sp[dateKey]]);
-  }
+function allHabits(weekKey) {
+  const list = [];
+  SECTIONS.forEach(s => s.habits.forEach(h => list.push(h)));
+  const sp = SPECIALS[weekKey] || {};
+  Object.values(sp).forEach(h => list.push(h));
   return list;
 }
 
-// ── BUILD UI ─────────────────────────────────────────────────────────────────
-function buildTabs() {
-  const el = document.getElementById('weekTabs');
+function habitsForDay(weekKey, dateKey, dow) {
+  const list = [];
+  SECTIONS.forEach(s => s.habits.filter(h => h.days.includes(dow)).forEach(h => list.push(h)));
+  const sp = (SPECIALS[weekKey] || {})[dateKey];
+  if (sp) list.push(sp);
+  return list;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function buildPills() {
+  const el = document.getElementById('pills');
   el.innerHTML = '';
   WEEKS.forEach((w,i) => {
-    const t = document.createElement('div');
-    t.className = 'week-tab' + (i===0?' active':'');
-    t.textContent = w.label;
-    t.onclick = () => selectWeek(i);
-    el.appendChild(t);
+    const p = document.createElement('div');
+    p.className = 'pill' + (i===curWeek?' active':'');
+    p.textContent = w.label + ' · ' + w.range;
+    p.onclick = () => { curWeek = i; buildPills(); render(); };
+    el.appendChild(p);
   });
+  setTimeout(() => el.children[curWeek]?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}), 50);
 }
 
-function selectWeek(idx) {
-  currentWeek = idx;
-  document.querySelectorAll('.week-tab').forEach((t,i)=>
-    t.classList.toggle('active', i===idx));
-  renderGrid();
-}
+function render() {
+  const week = WEEKS[curWeek];
+  const main = document.getElementById('main');
+  main.innerHTML = '';
 
-function renderGrid() {
-  const week = WEEKS[currentWeek];
-  document.getElementById('weekTitle').textContent = week.title;
-  document.getElementById('weekRange').textContent = week.range;
-
-  const grid = document.getElementById('mainGrid');
-  grid.innerHTML = '';
-
-  // Figure out day-of-week index for each day
-  const dayOfWeeks = week.days.map(d => {
-    const names = ['dom','lun','mar','mie','jue','vie','sab'];
-    // Determine from day name
-    const nm = d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-    const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-    const key = nm.slice(0,3);
-    return map[key] ?? 0;
-  });
-
-  // Get all habits rows needed (union across all days)
-  // We'll show all HABITS + specials
-  const specialForWeek = SPECIAL[week.key] || {};
-  const hasSpecial = Object.keys(specialForWeek).length > 0;
-
-  // Compute per-day habit lists
-  const dayHabits = week.days.map((d,i) => habitsForDay(week.key, d.k, dayOfWeeks[i]));
-
-  // Compute per-day done counts
-  const dayDone  = week.days.map((d,i) => dayHabits[i].filter(h => !!state[`${d.k}|${h.name}`]).length);
-  const dayTotal = week.days.map((d,i) => dayHabits[i].length);
+  // Per-day stats
+  const dayDone  = week.days.map(d => habitsForDay(week.key,d.k,d.dow).filter(h=>state[d.k+'|'+h.n]).length);
+  const dayTotal = week.days.map(d => habitsForDay(week.key,d.k,d.dow).length);
   const dayPct   = week.days.map((d,i) => dayTotal[i] ? Math.round(dayDone[i]/dayTotal[i]*100) : 0);
+  const totalDone  = dayDone.reduce((a,b)=>a+b,0);
+  const totalTotal = dayTotal.reduce((a,b)=>a+b,0);
+  const overPct  = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
+  const perfectD = dayPct.filter(p=>p===100).length;
 
-  // Header row
-  const thead = document.createElement('thead');
-  const headRow = document.createElement('tr');
-  // Habit label column
-  const th0 = document.createElement('th');
-  th0.style.cssText = 'background:var(--header);border:1px solid var(--border);padding:8px 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;position:sticky;left:0;z-index:15;';
-  th0.textContent = 'Hábito';
-  headRow.appendChild(th0);
+  // ── Overall header ──
+  const hdr = document.createElement('div');
+  hdr.className = 'week-header';
+  const rc = 138, off = Math.round(rc-(overPct/100)*rc);
+  const oc = textCol(overPct);
+  hdr.innerHTML = `
+    <div class="week-ring">
+      <svg viewBox="0 0 56 56">
+        <circle class="wr-track" cx="28" cy="28" r="22"/>
+        <circle class="wr-fill" cx="28" cy="28" r="22"
+          style="stroke:${oc};stroke-dashoffset:${off}"/>
+      </svg>
+      <div class="wr-pct" style="color:${oc}">${overPct}%</div>
+    </div>
+    <div class="week-info">
+      <div class="week-name">${week.title} · ${week.range}</div>
+      <div class="week-range">${totalDone}/${totalTotal} tareas completadas</div>
+      <div class="week-bar-wrap"><div class="week-bar" style="width:${overPct}%;background:${oc}"></div></div>
+    </div>
+    <div class="week-badges">
+      <div class="badge"><div class="badge-val" style="color:${oc}">${overPct}%</div><div class="badge-lbl">Total</div></div>
+      <div class="badge"><div class="badge-val" style="color:#f0a500">${perfectD}</div><div class="badge-lbl">Días 💯</div></div>
+    </div>`;
+  main.appendChild(hdr);
 
-  week.days.forEach((d,i) => {
-    const th = document.createElement('th');
-    th.style.cssText = 'background:var(--header);border:1px solid var(--border);min-width:80px;';
-    const pct = dayPct[i];
-    const col = getColor(pct);
-    const circumference = 100;
-    const offset = Math.round(circumference - (pct/100)*circumference);
-    const today = new Date().toISOString().split('T')[0];
-    const isToday = d.k === today;
+  // ── Grid section ──
+  const grid = document.createElement('div');
+  grid.className = 'grid-section';
 
-    th.innerHTML = `
-      <div class="day-head">
-        <div class="day-name-label" style="${isToday?'color:var(--yellow)':''}">${d.n}</div>
-        <div class="day-date-label">${d.d}</div>
-        <div class="day-pct-ring">
-          <svg viewBox="0 0 44 44">
-            <circle class="dr-track" cx="22" cy="22" r="16"/>
-            <circle class="dr-fill" cx="22" cy="22" r="16"
-              style="stroke:${col};stroke-dashoffset:${offset}"/>
-          </svg>
-          <div class="dr-pct" style="color:${col}">${pct}%</div>
-        </div>
-      </div>`;
-    headRow.appendChild(th);
+  // Day column headers
+  const colsWrap = document.createElement('div');
+  colsWrap.className = 'day-cols-wrap';
+  const cols = document.createElement('div');
+  cols.className = 'day-cols';
+  week.days.forEach(d => {
+    const ch = document.createElement('div');
+    ch.className = 'day-col-head' + (d.k===TODAY?' today':'');
+    ch.innerHTML = `<div class="day-col-name">${d.n}</div><div class="day-col-date">${d.d}</div>`;
+    cols.appendChild(ch);
   });
-  thead.appendChild(headRow);
-  grid.appendChild(thead);
+  colsWrap.appendChild(cols);
+  grid.appendChild(colsWrap);
 
-  // Body
-  const tbody = document.createElement('tbody');
-  let lastSection = null;
+  // Sections + habits
+  SECTIONS.forEach(sec => {
+    const sh = document.createElement('div');
+    sh.className = 'section-header';
+    sh.textContent = sec.label;
+    grid.appendChild(sh);
 
-  HABITS.forEach(h => {
-    // Section header
-    if (h.section && h.section !== lastSection) {
-      lastSection = h.section;
-      const sr = document.createElement('tr');
-      sr.className = 'section-row';
-      const td = document.createElement('td');
-      td.colSpan = week.days.length + 1;
-      td.textContent = h.section;
-      sr.appendChild(td);
-      tbody.appendChild(sr);
-    }
-
-    const row = document.createElement('tr');
-
-    // Label cell
-    const labelTd = document.createElement('td');
-    labelTd.className = 'habit-label-col';
-    labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
-    row.appendChild(labelTd);
-
-    // Checkbox cells
-    week.days.forEach((d,i) => {
-      const dn = DAY_NAMES[dayOfWeeks[i]];
-      const applies = !!h.days[dn];
-      const td = document.createElement('td');
-      td.className = 'check-cell' + (applies?'':' empty');
-
-      if (applies) {
-        const sk = `${d.k}|${h.name}`;
-        const done = !!state[sk];
-        td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
-        td.onclick = () => toggle(d.k, h.name, td);
-      } else {
-        td.innerHTML = `<div style="width:20px;height:20px;display:inline-block"></div>`;
-      }
-      row.appendChild(td);
+    sec.habits.forEach(habit => {
+      const row = buildHabitRow(week, habit, false);
+      grid.appendChild(row);
     });
-
-    tbody.appendChild(row);
   });
 
-  // Special habits row (lavar ropa / mercado)
-  if (hasSpecial) {
-    // Section header
-    const sr = document.createElement('tr');
-    sr.className = 'section-row';
-    const std = document.createElement('td');
-    std.colSpan = week.days.length + 1;
-    std.textContent = 'Especiales de la semana';
-    sr.appendChild(std);
-    tbody.appendChild(sr);
-
-    Object.entries(specialForWeek).forEach(([dateKey, habitLabel]) => {
-      const sh = SPECIAL_HABITS[habitLabel];
-      const row = document.createElement('tr');
-      const labelTd = document.createElement('td');
-      labelTd.className = 'habit-label-col';
-      labelTd.innerHTML = `<span style="margin-right:6px">${sh.emoji}</span>${sh.name}`;
-      row.appendChild(labelTd);
-
-      week.days.forEach((d,i) => {
-        const td = document.createElement('td');
-        if (d.k === dateKey) {
-          td.className = 'check-cell';
-          const sk = `${d.k}|${sh.name}`;
-          const done = !!state[sk];
-          td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
-          td.onclick = () => toggle(d.k, sh.name, td);
-        } else {
-          td.className = 'check-cell empty';
-          td.innerHTML = `<div style="width:20px;height:20px;display:inline-block"></div>`;
-        }
-        row.appendChild(td);
-      });
-      tbody.appendChild(row);
+  // Specials
+  const sp = SPECIALS[week.key] || {};
+  const spList = Object.entries(sp);
+  if (spList.length) {
+    const sh = document.createElement('div');
+    sh.className = 'section-header';
+    sh.textContent = 'Especiales';
+    grid.appendChild(sh);
+    spList.forEach(([dateKey, habit]) => {
+      const row = buildHabitRow(week, habit, true, dateKey);
+      grid.appendChild(row);
     });
   }
 
   // % row
-  const pctRow = document.createElement('tr');
+  const pctRow = document.createElement('div');
   pctRow.className = 'pct-row';
-  const pctLabel = document.createElement('td');
-  pctLabel.className = 'pct-label-cell';
+  const pctLabel = document.createElement('div');
+  pctLabel.className = 'pct-label';
   pctLabel.textContent = '% del día';
   pctRow.appendChild(pctLabel);
-
+  const pctVals = document.createElement('div');
+  pctVals.className = 'pct-vals';
   week.days.forEach((d,i) => {
-    const td = document.createElement('td');
-    td.style.cssText = 'background:var(--surface);border:1px solid var(--border);text-align:center;padding:8px;';
-    const pct = dayPct[i];
-    const col = getColor(pct);
-    td.innerHTML = `<span class="pct-val" style="color:${col}">${pct}%</span><br>
-      <span style="font-size:10px;color:var(--muted)">${dayDone[i]}/${dayTotal[i]}</span>`;
-    pctRow.appendChild(td);
+    const pv = document.createElement('div');
+    pv.className = 'pct-val';
+    const c = textCol(dayPct[i]);
+    pv.innerHTML = `<div class="pct-num" style="color:${c}">${dayPct[i]}%</div>
+                    <div class="pct-sub">${dayDone[i]}/${dayTotal[i]}</div>`;
+    pctVals.appendChild(pv);
   });
-  tbody.appendChild(pctRow);
-  grid.appendChild(tbody);
+  pctRow.appendChild(pctVals);
+  grid.appendChild(pctRow);
 
-  // Update overall stats
-  const totalDone  = dayDone.reduce((a,b)=>a+b,0);
-  const totalTotal = dayTotal.reduce((a,b)=>a+b,0);
-  const overallPct = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
-  const perfectDays = dayPct.filter(p=>p===100).length;
-  const col = getColor(overallPct);
-  const circumference = 201;
-  const offset = Math.round(circumference - (overallPct/100)*circumference);
-
-  document.getElementById('ringFill').style.strokeDashoffset = offset;
-  document.getElementById('ringFill').style.stroke = col;
-  document.getElementById('ringPct').textContent = overallPct+'%';
-  document.getElementById('ringPct').style.color = col;
-  document.getElementById('statDone').textContent = totalDone;
-  document.getElementById('statTotal').textContent = totalTotal;
-  document.getElementById('statPerfect').textContent = perfectDays;
-  document.getElementById('progressFill').style.width = overallPct+'%';
+  grid.appendChild(Object.assign(document.createElement('div'),{className:'spacer'}));
+  main.appendChild(grid);
 }
 
-// ── TOGGLE ───────────────────────────────────────────────────────────────────
-function toggle(dateKey, habitName, cell) {
-  const sk = `${dateKey}|${habitName}`;
+function buildHabitRow(week, habit, isSpecial, onlyDate) {
+  const row = document.createElement('div');
+  row.className = 'habit-row';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'habit-label';
+  lbl.innerHTML = `<span class="habit-emoji">${habit.e}</span><span class="habit-name">${habit.n}</span>`;
+  row.appendChild(lbl);
+
+  const boxes = document.createElement('div');
+  boxes.className = 'boxes';
+
+  week.days.forEach(day => {
+    const box = document.createElement('div');
+    let applies;
+    if (isSpecial) {
+      applies = day.k === onlyDate;
+    } else {
+      applies = habit.days.includes(day.dow);
+    }
+
+    const sk = day.k + '|' + habit.n;
+    const done = !!state[sk];
+
+    if (!applies) {
+      box.className = 'box na';
+    } else {
+      const pctSoFar = done ? 100 : 0;
+      box.className = 'box' + (done ? ' done' : '');
+      box.style.background = done ? col(100) : col(0);
+      box.onclick = () => toggleBox(day.k, habit.n, box);
+    }
+    boxes.appendChild(box);
+  });
+
+  row.appendChild(boxes);
+  return row;
+}
+
+// ─── TOGGLE ──────────────────────────────────────────────────────────────────
+function toggleBox(dateKey, habitName, box) {
+  const sk = dateKey + '|' + habitName;
   state[sk] = !state[sk];
   const done = state[sk];
 
-  const box = cell.querySelector('.checkbox');
-  box.classList.toggle('done', done);
-  box.textContent = done ? '✓' : '';
+  box.className = 'box' + (done ? ' done' : '');
+  box.style.background = done ? col(100) : col(0);
+  if (navigator.vibrate) navigator.vibrate(done ? 8 : 4);
 
-  localStorage.setItem('ht2_state', JSON.stringify(state));
-  renderGrid();
+  localStorage.setItem('ht_state', JSON.stringify(state));
+  render(); // update pcts + overall
 
   if (connected) {
-    setSyncState('sync','Guardando en Notion...');
     clearTimeout(syncTimer);
     syncTimer = setTimeout(async () => {
-      await syncToNotion(dateKey, habitName, done);
-      setSyncState('ok','Guardado en Notion ✓');
-    }, 700);
+      showToast('Guardando...');
+      await syncTask(dateKey, habitName, done);
+      showToast('✓ Guardado en Notion');
+    }, 800);
   }
 }
 
-// ── SYNC STATE ────────────────────────────────────────────────────────────────
-function setSyncState(s, msg) {
-  document.getElementById('sdot').className = 'sdot ' + s;
-  document.getElementById('syncMsg').textContent = msg;
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let toastT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── NOTION ────────────────────────────────────────────────────────────────────
-function toggleSetup() {
-  document.getElementById('setupWrap').classList.toggle('show');
-}
-
-async function notionReq(path, method='GET', body=null, key=apiKey) {
-  const proxy = 'https://corsproxy.io/?';
-  const url = proxy + encodeURIComponent('https://api.notion.com/v1/' + path);
-  const opts = {
-    method,
-    headers: {
-      'Authorization': 'Bearer ' + key,
-      'Notion-Version': '2022-06-28',
-      'Content-Type': 'application/json'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(url, opts);
-  return r.json();
-}
+// ─── NOTION SHEET ─────────────────────────────────────────────────────────────
+function openSheet()  { document.getElementById('overlay').classList.add('show'); }
+function closeSheet() { document.getElementById('overlay').classList.remove('show'); }
+function closeOutside(e) { if (e.target===document.getElementById('overlay')) closeSheet(); }
 
 async function connectNotion() {
-  const key = document.getElementById('apiKey').value.trim();
-  const db  = document.getElementById('dbId').value.trim().replace(/-/g,'');
-  const msg = document.getElementById('setupMsg');
-  const btn = document.getElementById('connectBtn');
-  if (!key || !db) { msg.className='msg err'; msg.textContent='Completa ambos campos.'; return; }
-  btn.disabled = true; btn.textContent = 'Conectando...'; msg.textContent = '';
+  const key = document.getElementById('iToken').value.trim();
+  const db  = document.getElementById('iDb').value.trim().replace(/-/g,'');
+  const msg = document.getElementById('smsg');
+  const btn = document.getElementById('sbtn');
+  if (!key||!db){msg.className='smsg err';msg.textContent='Completa ambos campos.';return;}
+  btn.disabled=true; btn.textContent='Conectando...'; msg.textContent='';
   try {
-    const res = await notionReq('databases/'+db, 'GET', null, key);
-    if (res.object === 'error') throw new Error(res.message);
-    apiKey = key; dbId = db;
-    localStorage.setItem('ht2_api', key);
-    localStorage.setItem('ht2_db', db);
-    connected = true;
-    document.getElementById('ndot').className = 'ndot on';
-    document.getElementById('notionLabel').textContent = 'Notion conectado';
-    msg.className='msg ok'; msg.textContent='✓ Conectado. Cargando datos...';
-    document.getElementById('setupWrap').classList.remove('show');
-    await loadNotionData();
-  } catch(e) {
-    msg.className='msg err'; msg.textContent='Error: '+e.message;
-  }
-  btn.disabled = false; btn.textContent = 'Conectar';
+    const r = await nReq('databases/'+db,'GET',null,key);
+    if (r.object==='error') throw new Error(r.message);
+    apiKey=key; dbId=db;
+    localStorage.setItem('ht_api',key); localStorage.setItem('ht_db',db);
+    connected=true; updateUI(true);
+    msg.className='smsg ok'; msg.textContent='✓ Conectado. Cargando...';
+    await loadNotion(); setTimeout(closeSheet,1500);
+  } catch(e){ msg.className='smsg err'; msg.textContent='Error: '+e.message; }
+  btn.disabled=false; btn.textContent='Conectar';
 }
 
-async function loadNotionData() {
-  setSyncState('sync','Cargando desde Notion...');
+function updateUI(ok) {
+  document.getElementById('ndot').className='ndot'+(ok?' on':'');
+  document.getElementById('nlabel').textContent=ok?'Conectado':'Notion';
+  document.getElementById('notionBtn').className='notion-btn'+(ok?' on':'');
+}
+
+// ─── NOTION API ───────────────────────────────────────────────────────────────
+async function nReq(path,method='GET',body=null,key=apiKey){
+  const proxy='https://corsproxy.io/?';
+  const url=proxy+encodeURIComponent('https://api.notion.com/v1/'+path);
+  const opts={method,headers:{'Authorization':'Bearer '+key,'Notion-Version':'2022-06-28','Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(url,opts); return r.json();
+}
+
+async function loadNotion(){
+  showToast('Sincronizando...');
   try {
-    let pages=[], cursor;
+    let pages=[],cursor;
     do {
-      const body = {page_size:100, ...(cursor?{start_cursor:cursor}:{})};
-      const res = await notionReq('databases/'+dbId+'/query','POST',body);
-      if (res.object==='error') throw new Error(res.message);
-      pages = pages.concat(res.results||[]);
-      cursor = res.has_more ? res.next_cursor : undefined;
+      const body={page_size:100,...(cursor?{start_cursor:cursor}:{})};
+      const r=await nReq('databases/'+dbId+'/query','POST',body);
+      if(r.object==='error') throw new Error(r.message);
+      pages=pages.concat(r.results||[]);
+      cursor=r.has_more?r.next_cursor:undefined;
     } while(cursor);
-
-    notionIds = {};
-    for (const p of pages) {
-      const nombre = p.properties?.Nombre?.title?.[0]?.plain_text||'';
-      const fecha  = p.properties?.Fecha?.date?.start||'';
-      const hecho  = p.properties?.Hecho?.checkbox||false;
-      const k = `${fecha}|${nombre}`;
-      notionIds[k] = {id:p.id, hecho};
-      if (!(k in state)) state[k] = hecho;
+    nIds={};
+    for(const p of pages){
+      const n=p.properties?.Nombre?.title?.[0]?.plain_text||'';
+      const f=p.properties?.Fecha?.date?.start||'';
+      const h=p.properties?.Hecho?.checkbox||false;
+      const k=f+'|'+n; nIds[k]={id:p.id,hecho:h};
+      if(!(k in state)) state[k]=h;
     }
-    localStorage.setItem('ht2_nids', JSON.stringify(notionIds));
-    localStorage.setItem('ht2_state', JSON.stringify(state));
-    setSyncState('ok', `Sincronizado · ${pages.length} tareas`);
-    renderGrid();
-  } catch(e) {
-    setSyncState('err','Error: '+e.message);
-  }
+    localStorage.setItem('ht_nids',JSON.stringify(nIds));
+    localStorage.setItem('ht_state',JSON.stringify(state));
+    showToast('✓ '+pages.length+' tareas sincronizadas'); render();
+  } catch(e){ showToast('Error: '+e.message); }
 }
 
-async function syncToNotion(dateKey, habitName, done) {
-  const k = `${dateKey}|${habitName}`;
-  const entry = notionIds[k];
-  if (!entry) return;
-  try {
-    await notionReq('pages/'+entry.id,'PATCH',{
-      properties:{Hecho:{checkbox:done}}
-    });
-  } catch(e) { console.warn('Sync error',e); }
+async function syncTask(dateKey,habitName,done){
+  const k=dateKey+'|'+habitName, entry=nIds[k];
+  if(!entry) return;
+  try { await nReq('pages/'+entry.id,'PATCH',{properties:{Hecho:{checkbox:done}}}); }
+  catch(e){ console.warn(e); }
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
-  if (apiKey && dbId) {
-    document.getElementById('apiKey').value = apiKey;
-    document.getElementById('dbId').value = dbId;
-    connected = true;
-    document.getElementById('ndot').className = 'ndot on';
-    document.getElementById('notionLabel').textContent = 'Notion conectado';
-    loadNotionData();
-  }
-  buildTabs();
-  renderGrid();
+  // Find current week
+  WEEKS.forEach((w,i)=>{
+    const first=w.days[0].k, last=w.days[w.days.length-1].k;
+    if(TODAY>=first&&TODAY<=last) curWeek=i;
+  });
+  if(apiKey&&dbId){ connected=true; updateUI(true); loadNotion(); }
+  buildPills(); render();
 };
 </script>
 </body>
