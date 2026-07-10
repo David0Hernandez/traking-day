@@ -1136,7 +1136,7 @@ function renderGrid() {
     labelTd.className = 'habit-label-col';
     if (h.gym) {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
-    } else if (STUDY_ROUTINES[h.name]) {
+    } else if (HABIT_LANG[h.name]) {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span><span style="cursor:pointer;border-bottom:1px dashed var(--muted2)" onclick="openStudyModal('${h.name}')">${h.name}</span>`;
     } else {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
