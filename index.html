@@ -622,6 +622,8 @@ const HABITS = [
     days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
   { emoji:"📵", name:"Menos de 2h teléfono",
     days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
+  { emoji:"🌙", name:"Dormir a las 10 PM",
+    days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:0,sab:0} },
 
   // GYM (rutina específica por día)
   { section:"Gym", emoji:"🏋️", name:"Gym – Empuje",
@@ -1057,7 +1059,7 @@ function renderProgressCharts() {
 
   // ── 4. Chart por categoría ────────────────────────────────────────────────
   const cats = {
-    'Rutina diaria': ['Hacer la cama','Leer (30 min)','Menos de 2h teléfono'],
+    'Rutina diaria': ['Hacer la cama','Leer (30 min)','Menos de 2h teléfono','Dormir a las 10 PM'],
     'Gym':           ['Gym – Empuje','Gym – Tirón','Gym – Piernas','Gym – Torso (opc)'],
     'Idiomas':       ['Inglés C1','IELTS Prep','Francés','TEF Canada'],
     'Hogar':         ['Lavar el baño','Organizar apto','Lavar ropa','Mercado'],
