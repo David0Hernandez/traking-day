@@ -381,7 +381,22 @@ input::placeholder { color: var(--muted2); }
   .progress-track { min-width: 120px; }
   .gym-modal { border-radius: 12px 12px 0 0; }
 }
+
+/* ── PROGRESS CHARTS ── */
+.prog-chart-section { padding: 16px 20px 8px; border-bottom: 1px solid var(--border); }
+.prog-chart-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:12px; }
+.prog-stat-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; text-align:center; }
+.prog-stat-card .val { font-size:28px; font-weight:700; }
+.prog-stat-card .lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:4px; }
+.gym-ex-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:20px; padding:5px 12px; font-size:11px; color:var(--muted); cursor:pointer; transition:all .2s; }
+.gym-ex-btn.active { background:var(--teal); border-color:var(--teal); color:#0f1b2d; font-weight:700; }
+.habit-rank-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.habit-rank-name { font-size:11px; color:var(--text); width:130px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.habit-rank-track { flex:1; background:var(--surface3); border-radius:3px; height:10px; overflow:hidden; }
+.habit-rank-fill { height:100%; border-radius:3px; }
+.habit-rank-pct { font-size:11px; color:var(--muted); width:32px; text-align:right; flex-shrink:0; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -481,17 +496,39 @@ input::placeholder { color: var(--muted2); }
 
 <!-- PROGRESS PAGE -->
 <div class="progress-page" id="progressPage">
-  <div class="prog-section">
-    <div class="prog-section-title">Progreso por semana</div>
-    <div id="progWeeks"></div>
+  <!-- Stat cards arriba -->
+  <div id="progStatCards" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px 20px 0;"></div>
+
+  <!-- Gráfica 1: % diario todo el mes -->
+  <div class="prog-chart-section">
+    <div class="prog-chart-title">Tareas completadas por día</div>
+    <div style="position:relative;height:200px;padding:0 8px">
+      <canvas id="chartDaily"></canvas>
+    </div>
   </div>
-  <div class="prog-section">
-    <div class="prog-section-title">Por categoría (mes completo)</div>
-    <div id="progCats"></div>
+
+  <!-- Gráfica 2: Por categoría -->
+  <div class="prog-chart-section">
+    <div class="prog-chart-title">Cumplimiento por categoría</div>
+    <div style="position:relative;height:180px;padding:0 8px">
+      <canvas id="chartCats"></canvas>
+    </div>
   </div>
-  <div class="prog-section">
-    <div class="prog-section-title">Resumen julio</div>
-    <div class="prog-stats-grid" id="progStats"></div>
+
+  <!-- Gráfica 3: Progreso gym (pesos) -->
+  <div class="prog-chart-section">
+    <div class="prog-chart-title">Progreso gym — peso por sesión (kg)</div>
+    <!-- Selector de ejercicio -->
+    <div style="padding:0 8px 10px;display:flex;gap:6px;flex-wrap:wrap" id="gymExSelector"></div>
+    <div style="position:relative;height:180px;padding:0 8px">
+      <canvas id="chartGym"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabla: ranking de hábitos -->
+  <div class="prog-chart-section">
+    <div class="prog-chart-title">Ranking de hábitos</div>
+    <div id="habitRanking" style="padding:0 8px 8px"></div>
   </div>
 </div>
 
@@ -944,95 +981,212 @@ function showProgress() {
   document.getElementById('progressPage').classList.add('show');
   document.getElementById('weekTitle').textContent = 'Progreso julio';
   document.getElementById('weekRange').textContent = '5 jul – 1 ago 2026';
-  renderProgress();
+  renderProgressCharts();
 }
 
-function renderProgress() {
-  // Calcular progreso por semana
-  const weekColors = ['var(--teal)','var(--blue)','var(--green)','var(--yellow)'];
-  let weeksHtml = '';
-  let totalDone = 0, totalTotal = 0, perfectDays = 0;
+// Instancias de Chart.js para destruir antes de recrear
+let _chartDaily = null, _chartCats = null, _chartGym = null;
+let _selectedGymEx = 0; // índice del ejercicio seleccionado
 
-  WEEKS.forEach((week, wi) => {
-    let wd = 0, wt = 0, wPerfect = 0;
-    week.days.forEach((d,i) => {
-      const dayOfWeeks = week.days.map(dd => {
-        const nm = dd.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-        return map[nm.slice(0,3)] ?? 0;
+function renderProgressCharts() {
+  // ── 1. Calcular datos por día ──────────────────────────────────────────────
+  const allDays = [];
+  WEEKS.forEach(w => w.days.forEach(d => allDays.push(d)));
+
+  const DAY_NAMES_LOCAL = ['dom','lun','mar','mie','jue','vie','sab'];
+
+  function dayOfWeekIdx(d) {
+    const nm = d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
+    return map[nm.slice(0,3)] ?? 0;
+  }
+
+  let totalDone = 0, totalTotal = 0, perfectDays = 0, bestStreak = 0, curStreak = 0;
+  const dailyLabels = [], dailyDone = [], dailyTotal = [], dailyPct = [];
+
+  allDays.forEach(d => {
+    const dow = dayOfWeekIdx(d);
+    const weekObj = WEEKS.find(w => w.days.includes(d));
+    const habits = habitsForDay(weekObj.key, d.k, dow);
+    const done = habits.filter(h => !!state[`${d.k}|${h.name}`]).length;
+    const total = habits.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    dailyLabels.push(d.d);
+    dailyDone.push(done);
+    dailyTotal.push(total);
+    dailyPct.push(pct);
+    totalDone += done; totalTotal += total;
+    if (pct === 100 && total > 0) { perfectDays++; curStreak++; bestStreak = Math.max(bestStreak, curStreak); }
+    else curStreak = 0;
+  });
+
+  const overallPct = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
+
+  // ── 2. Stat cards ─────────────────────────────────────────────────────────
+  document.getElementById('progStatCards').innerHTML = `
+    <div class="prog-stat-card"><div class="val" style="color:var(--teal)">${overallPct}%</div><div class="lbl">Cumplimiento</div></div>
+    <div class="prog-stat-card"><div class="val" style="color:var(--blue)">${totalDone}<span style="font-size:14px;color:var(--muted)">/${totalTotal}</span></div><div class="lbl">Tareas hechas</div></div>
+    <div class="prog-stat-card"><div class="val" style="color:var(--green)">${perfectDays}</div><div class="lbl">Días 💯</div></div>
+    <div class="prog-stat-card"><div class="val" style="color:var(--yellow)">${bestStreak}</div><div class="lbl">Mejor racha</div></div>`;
+
+  // ── 3. Chart diario ───────────────────────────────────────────────────────
+  const barColors = dailyPct.map(p => p >= 80 ? '#4ecdc4' : p >= 50 ? '#f4a261' : '#e76f51');
+  if (_chartDaily) _chartDaily.destroy();
+  _chartDaily = new Chart(document.getElementById('chartDaily'), {
+    type: 'bar',
+    data: {
+      labels: dailyLabels,
+      datasets: [{
+        data: dailyPct,
+        backgroundColor: barColors,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{
+        callbacks:{ label: ctx => `${ctx.raw}% (${dailyDone[ctx.dataIndex]}/${dailyTotal[ctx.dataIndex]})` }
+      }},
+      scales: {
+        x: { ticks:{color:'#8ba8c4',font:{size:9}}, grid:{color:'#1e3050'} },
+        y: { min:0, max:100, ticks:{color:'#8ba8c4',font:{size:9},callback:v=>v+'%'}, grid:{color:'#1e3050'} }
+      }
+    }
+  });
+
+  // ── 4. Chart por categoría ────────────────────────────────────────────────
+  const cats = {
+    'Rutina diaria': ['Hacer la cama','Leer (30 min)','Menos de 2h teléfono'],
+    'Gym':           ['Gym – Empuje','Gym – Tirón','Gym – Piernas','Gym – Torso (opc)'],
+    'Idiomas':       ['Inglés C1','IELTS Prep','Francés','TEF Canada'],
+    'Hogar':         ['Lavar el baño','Organizar apto','Lavar ropa','Mercado'],
+    'Trabajo':       ['Almuerzo empacado','TradeBot'],
+  };
+  const catColors2 = ['#4ecdc4','#4895ef','#7b68ee','#52b788','#f4a261'];
+  const catLabels = Object.keys(cats);
+  const catPcts = catLabels.map(cat => {
+    let cd = 0, ct = 0;
+    WEEKS.forEach(w => w.days.forEach(d => {
+      const dow = dayOfWeekIdx(d);
+      cats[cat].forEach(name => {
+        const h = HABITS.find(h => h.name === name); if (!h) return;
+        const dn = DAY_NAMES_LOCAL[dow];
+        if (h.days[dn]) { ct++; if (state[`${d.k}|${name}`]) cd++; }
       });
-      const dayHabits = habitsForDay(week.key, d.k, dayOfWeeks[i]);
-      const done = dayHabits.filter(h => !!state[`${d.k}|${h.name}`]).length;
-      const total = dayHabits.length;
-      if (total > 0) {
-        wd += done; wt += total;
-        if (done === total) { wPerfect++; perfectDays++; }
+    }));
+    return ct ? Math.round(cd/ct*100) : 0;
+  });
+  if (_chartCats) _chartCats.destroy();
+  _chartCats = new Chart(document.getElementById('chartCats'), {
+    type: 'bar',
+    data: {
+      labels: catLabels,
+      datasets: [{ data: catPcts, backgroundColor: catColors2, borderRadius: 6, borderSkipped: false }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx=>`${ctx.raw}%` } } },
+      scales: {
+        x: { min:0, max:100, ticks:{color:'#8ba8c4',font:{size:9},callback:v=>v+'%'}, grid:{color:'#1e3050'} },
+        y: { ticks:{color:'#8ba8c4',font:{size:10}}, grid:{display:false} }
+      }
+    }
+  });
+
+  // ── 5. Chart gym ──────────────────────────────────────────────────────────
+  // Ejercicios de cada rutina con sus días de sesión
+  const gymSessions = [
+    { routineKey:'empuje', exIdx:0, label:'Press banca (Lun)', days: allDays.filter(d => dayOfWeekIdx(d)===1) },
+    { routineKey:'empuje', exIdx:2, label:'Press militar (Lun)', days: allDays.filter(d => dayOfWeekIdx(d)===1) },
+    { routineKey:'tiron',  exIdx:0, label:'Jalón/Dominadas (Mié)', days: allDays.filter(d => dayOfWeekIdx(d)===3) },
+    { routineKey:'tiron',  exIdx:1, label:'Remo barra (Mié)', days: allDays.filter(d => dayOfWeekIdx(d)===3) },
+    { routineKey:'piernas',exIdx:0, label:'Sentadilla (Vie)', days: allDays.filter(d => dayOfWeekIdx(d)===5) },
+    { routineKey:'piernas',exIdx:1, label:'Peso muerto rumano (Vie)', days: allDays.filter(d => dayOfWeekIdx(d)===5) },
+  ];
+
+  function buildGymChart(exIdx) {
+    const ex = gymSessions[exIdx];
+    const labels = ex.days.map(d => d.d);
+    const data = ex.days.map(d => {
+      const val = localStorage.getItem(`gym|${ex.routineKey}|${ex.exIdx}|${d.k}`);
+      return val ? parseFloat(val) : null;
+    });
+    if (_chartGym) _chartGym.destroy();
+    _chartGym = new Chart(document.getElementById('chartGym'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: ex.label,
+          data,
+          borderColor: '#4ecdc4',
+          backgroundColor: 'rgba(78,205,196,0.15)',
+          pointBackgroundColor: '#4ecdc4',
+          pointRadius: 5, pointHoverRadius: 7,
+          tension: 0.3, fill: true, spanGaps: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: ctx => ctx.raw !== null ? `${ctx.raw} kg` : 'Sin dato' } } },
+        scales: {
+          x: { ticks:{color:'#8ba8c4',font:{size:9}}, grid:{color:'#1e3050'} },
+          y: { ticks:{color:'#8ba8c4',font:{size:9},callback:v=>v+' kg'}, grid:{color:'#1e3050'} }
+        }
       }
     });
-    const pct = wt ? Math.round(wd/wt*100) : 0;
-    totalDone += wd; totalTotal += wt;
-    const col = pct >= 80 ? 'var(--teal)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
-    weeksHtml += `<div class="prog-week-row">
-      <div class="prog-week-label">${week.label.split('·')[1]?.trim() || week.label}</div>
-      <div class="prog-bar-track">
-        <div class="prog-bar-fill" style="width:${pct}%;background:${col}"></div>
-        <div class="prog-bar-pct">${pct}%</div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);width:40px;text-align:right">${wd}/${wt}</div>
+  }
+
+  // Selector de ejercicio gym
+  const sel = document.getElementById('gymExSelector');
+  sel.innerHTML = gymSessions.map((ex,i) =>
+    `<div class="gym-ex-btn${i===_selectedGymEx?' active':''}" onclick="selectGymEx(${i})">${ex.label.split(' (')[0]}</div>`
+  ).join('');
+  buildGymChart(_selectedGymEx);
+
+  // ── 6. Ranking de hábitos ─────────────────────────────────────────────────
+  const habitStats = HABITS.map(h => {
+    let done = 0, total = 0;
+    WEEKS.forEach(w => w.days.forEach(d => {
+      const dn = DAY_NAMES_LOCAL[dayOfWeekIdx(d)];
+      if (h.days[dn]) { total++; if (state[`${d.k}|${h.name}`]) done++; }
+    }));
+    return { name: h.emoji + ' ' + h.name, pct: total ? Math.round(done/total*100) : 0, done, total };
+  }).filter(h => h.total > 0).sort((a,b) => b.pct - a.pct);
+
+  document.getElementById('habitRanking').innerHTML = habitStats.map(h => {
+    const col = h.pct >= 80 ? 'var(--teal)' : h.pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return `<div class="habit-rank-row">
+      <div class="habit-rank-name">${h.name}</div>
+      <div class="habit-rank-track"><div class="habit-rank-fill" style="width:${h.pct}%;background:${col}"></div></div>
+      <div class="habit-rank-pct" style="color:${col}">${h.pct}%</div>
     </div>`;
+  }).join('');
+}
+
+function selectGymEx(idx) {
+  _selectedGymEx = idx;
+  document.querySelectorAll('.gym-ex-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  const allDays = [];
+  WEEKS.forEach(w => w.days.forEach(d => allDays.push(d)));
+  const gymSessions = [
+    { routineKey:'empuje', exIdx:0, label:'Press banca', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===1; }) },
+    { routineKey:'empuje', exIdx:2, label:'Press militar', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===1; }) },
+    { routineKey:'tiron',  exIdx:0, label:'Jalón/Dominadas', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===3; }) },
+    { routineKey:'tiron',  exIdx:1, label:'Remo barra', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===3; }) },
+    { routineKey:'piernas',exIdx:0, label:'Sentadilla', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===5; }) },
+    { routineKey:'piernas',exIdx:1, label:'Peso muerto rumano', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===5; }) },
+  ];
+  const ex = gymSessions[idx];
+  const labels = ex.days.map(d => d.d);
+  const data = ex.days.map(d => { const v = localStorage.getItem(`gym|${ex.routineKey}|${ex.exIdx}|${d.k}`); return v ? parseFloat(v) : null; });
+  if (_chartGym) _chartGym.destroy();
+  _chartGym = new Chart(document.getElementById('chartGym'), {
+    type:'line',
+    data:{ labels, datasets:[{ label:ex.label, data, borderColor:'#4ecdc4', backgroundColor:'rgba(78,205,196,0.15)', pointBackgroundColor:'#4ecdc4', pointRadius:5, pointHoverRadius:7, tension:0.3, fill:true, spanGaps:false }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.raw!==null?`${ctx.raw} kg`:'Sin dato' } } }, scales:{ x:{ticks:{color:'#8ba8c4',font:{size:9}},grid:{color:'#1e3050'}}, y:{ticks:{color:'#8ba8c4',font:{size:9},callback:v=>v+' kg'},grid:{color:'#1e3050'}} } }
   });
-  document.getElementById('progWeeks').innerHTML = weeksHtml;
-
-  // Progreso por categoría
-  const cats = { 'Rutina diaria':['Hacer la cama','Leer (30 min)','Menos de 2h teléfono'],
-    'Gym':['Gym – Empuje','Gym – Tirón','Gym – Piernas','Gym – Torso (opc)'],
-    'Estudio':['Inglés C1','IELTS Prep','Francés','TEF Canada'],
-    'Hogar':['Lavar el baño','Organizar apto','Lavar ropa','Mercado'],
-    'Trabajo':['Almuerzo empacado','TradeBot'] };
-  const catColors = {'Rutina diaria':'var(--teal)','Gym':'var(--blue)','Estudio':'var(--purple)','Hogar':'var(--green)','Trabajo':'var(--yellow)'};
-  let catsHtml = '';
-  Object.entries(cats).forEach(([cat, names]) => {
-    let cd = 0, ct = 0;
-    WEEKS.forEach(week => {
-      week.days.forEach(d => {
-        names.forEach(name => {
-          const habit = HABITS.find(h => h.name === name);
-          if (!habit) return;
-          const nm = d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-          const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-          const dn = DAY_NAMES[map[nm.slice(0,3)] ?? 0];
-          if (habit.days[dn]) { ct++; if (state[`${d.k}|${name}`]) cd++; }
-        });
-      });
-    });
-    const pct = ct ? Math.round(cd/ct*100) : 0;
-    catsHtml += `<div class="prog-cat-row">
-      <div class="prog-cat-label">${cat}</div>
-      <div class="prog-cat-track"><div class="prog-cat-fill" style="width:${pct}%;background:${catColors[cat]}"></div></div>
-      <div class="prog-cat-pct">${pct}%</div>
-    </div>`;
-  });
-  document.getElementById('progCats').innerHTML = catsHtml;
-
-  // Stats totales
-  const overallPct = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
-  document.getElementById('progStats').innerHTML = `
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--teal)">${overallPct}%</div><div class="prog-stat-lbl">Cumplimiento total</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--blue)">${totalDone}</div><div class="prog-stat-lbl">Hábitos completados</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--green)">${perfectDays}</div><div class="prog-stat-lbl">Días perfectos 💯</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--yellow)">${totalTotal - totalDone}</div><div class="prog-stat-lbl">Pendientes</div></div>`;
-
-  // Update ring
-  const col = overallPct >= 80 ? 'var(--teal)' : overallPct >= 50 ? 'var(--yellow)' : 'var(--red)';
-  const offset = Math.round(201 - (overallPct/100)*201);
-  document.getElementById('ringFill').style.strokeDashoffset = offset;
-  document.getElementById('ringFill').style.stroke = col;
-  document.getElementById('ringPct').textContent = overallPct+'%';
-  document.getElementById('ringPct').style.color = col;
-  document.getElementById('statDone').textContent = totalDone;
-  document.getElementById('statTotal').textContent = totalTotal;
-  document.getElementById('statPerfect').textContent = perfectDays;
-  document.getElementById('progressFill').style.width = overallPct+'%';
 }
 
 function selectWeek(idx) {
