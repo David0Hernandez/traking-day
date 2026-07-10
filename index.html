@@ -458,6 +458,18 @@ input::placeholder { color: var(--muted2); }
   <table class="habits-grid" id="mainGrid"></table>
 </div>
 
+<!-- STUDY MODAL -->
+<div class="gym-modal-overlay" id="studyOverlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="gym-modal">
+    <div class="gym-modal-header">
+      <div class="gym-modal-title" id="studyModalTitle"></div>
+      <button class="gym-close" onclick="document.getElementById('studyOverlay').classList.remove('show')">✕</button>
+    </div>
+    <div id="studyModalBody"></div>
+    <div class="gym-note" id="studyModalTip" style="margin-top:14px;padding:10px;background:var(--surface2);border-radius:8px;line-height:1.6;"></div>
+  </div>
+</div>
+
 <!-- GYM MODAL -->
 <div class="gym-modal-overlay" id="gymOverlay" onclick="closeGymModal(event)">
   <div class="gym-modal">
@@ -576,9 +588,59 @@ const HABITS = [
     days:{dom:0,lun:0,mar:0,mie:0,jue:1,vie:0,sab:0} },
 ];
 
-// Sin especiales — Mercado (jue) y Lavar ropa (dom) ya son hábitos regulares
-const SPECIAL = { S3:{}, S4:{}, S5:{}, S6:{} };
-const SPECIAL_HABITS = {};
+// Preply Julie — Sáb 11 jul (única clase confirmada, suscripción cancelada el 1 jul)
+const SPECIAL = {
+  S3:{"2026-07-11":"📚 Preply"},
+  S4:{}, S5:{}, S6:{}
+};
+const SPECIAL_HABITS = {
+  "📚 Preply": {emoji:"📚", name:"Preply · Julie R. 10:00 AM"},
+};
+
+// ── RUTINAS DE ESTUDIO ───────────────────────────────────────────────────────
+const STUDY_ROUTINES = {
+  'Inglés C1': {
+    title: '🔵 Inglés C1 — Sesión del día',
+    color: 'var(--blue)',
+    tareas: [
+      ['Vocabulario', 'Aprende 8-10 colocaciones o phrasal verbs nuevos. Escríbelos en una oración.', '15 min'],
+      ['Podcast nativo', 'BBC 6 Minute English, TED o serie en inglés. Escucha activa — anota palabras nuevas.', '15 min'],
+      ['IELTS Reading', '1 pasaje completo con preguntas. Practica skimming y scanning.', '20 min'],
+      ['Speaking solo', 'Elige un tema (trabajo, tecnología, medio ambiente) y habla 2 min grabado. Escúchate.', '5 min'],
+    ],
+    tip: '💡 Tu mayor falencia: vocabulario formal y fluidez al hablar. Grábate siempre — el oído te corrige más que las reglas.'
+  },
+  'IELTS Prep': {
+    title: '🎓 IELTS Prep — Práctica oficial',
+    color: 'var(--purple)',
+    tareas: [
+      ['Writing Task 2', 'Essay de opinión (250 palabras mínimo). Estructura: intro + 2 párrafos + conclusión. Cronométrate 40 min.', '40 min'],
+      ['Listening Sec. 3-4', 'Las secciones más difíciles del IELTS. Practica nota-toma mientras escuchas.', '15 min'],
+      ['Vocabulario AWL', 'Academic Word List: 10 palabras, definición, ejemplo y sinónimo.', '10 min'],
+    ],
+    tip: '💡 IELTS C1 = Band 7.0+. En Writing: usa conectores variados, evita repetir palabras, párrafos con idea clara + evidencia + cierre.'
+  },
+  'Francés': {
+    title: '🟣 Francés — Sesión del día',
+    color: 'var(--purple)',
+    tareas: [
+      ['Vocabulario temático', 'Elige un tema (trabajo, salud, immigration, culture). Aprende 8 palabras con contexto.', '10 min'],
+      ['Radio-Canada / Podcast', 'Escucha activa con transcripción. Pausa y repite frases difíciles.', '15 min'],
+      ['Lectura + resumen', 'Lee un artículo en francés. Escribe 3 líneas de resumen en francés.', '15 min'],
+    ],
+    tip: '💡 Habla en voz alta mientras lees — activa el oído. El mayor error en francés escrito: olvidar los accents (é, è, ê, à, ù) y el género.'
+  },
+  'TEF Canada': {
+    title: '🍁 TEF Canada — Simulacro',
+    color: 'var(--green)',
+    tareas: [
+      ['Compréhension de l\'oral', 'Simulacro formato TEF: 3 documentos, 40 min. Anota palabras clave.', '15 min'],
+      ['Compréhension de l\'écrit', 'Textos nivel B2 con preguntas de opción múltiple. Practica eliminar respuestas.', '15 min'],
+      ['Expression écrite', 'Rédaction TEF: 200-250 mots, registro formal. Revisa subjuntivo y condicional.', '15 min'],
+    ],
+    tip: '💡 TEF Canada requiere B2 mínimo. Expression orale: prepara 5 temas (famille, travail, société, loisirs, environnement) con argumentos listos.'
+  },
+};
 
 // ── RUTINAS GYM ─────────────────────────────────────────────────────────────
 const GYM_ROUTINES = {
@@ -779,6 +841,8 @@ function renderGrid() {
     labelTd.className = 'habit-label-col';
     if (h.gym) {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
+    } else if (STUDY_ROUTINES[h.name]) {
+      labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span><span style="cursor:pointer;border-bottom:1px dashed var(--muted2)" onclick="openStudyModal('${h.name}')">${h.name}</span>`;
     } else {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
     }
@@ -1002,6 +1066,24 @@ async function syncToNotion(dateKey, habitName, done) {
       properties:{Hecho:{checkbox:done}}
     });
   } catch(e) { console.warn('Sync error',e); }
+}
+
+// ── STUDY MODAL ──────────────────────────────────────────────────────────────
+function openStudyModal(habitName) {
+  const r = STUDY_ROUTINES[habitName];
+  if (!r) return;
+  document.getElementById('studyModalTitle').textContent = r.title;
+  document.getElementById('studyModalTitle').style.color = r.color;
+  document.getElementById('studyModalBody').innerHTML = r.tareas.map(([nombre, desc, tiempo]) => `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${nombre}</span>
+        <span style="font-size:11px;color:${r.color};background:var(--surface3);padding:2px 8px;border-radius:12px;">${tiempo}</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">${desc}</div>
+    </div>`).join('');
+  document.getElementById('studyModalTip').textContent = r.tip;
+  document.getElementById('studyOverlay').classList.add('show');
 }
 
 // ── GYM MODAL ────────────────────────────────────────────────────────────────
