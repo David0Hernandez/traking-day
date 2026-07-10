@@ -778,7 +778,7 @@ function renderGrid() {
     const labelTd = document.createElement('td');
     labelTd.className = 'habit-label-col';
     if (h.gym) {
-      labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span><span style="cursor:pointer;border-bottom:1px dashed var(--muted2)" onclick="openGymModal('${h.gym}')">${h.name}</span>`;
+      labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
     } else {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
     }
@@ -794,8 +794,15 @@ function renderGrid() {
       if (applies) {
         const sk = `${d.k}|${h.name}`;
         const done = !!state[sk];
-        td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
-        td.onclick = () => toggle(d.k, h.name, td);
+        if (h.gym) {
+          td.innerHTML = `<div class="checkbox${done?' done':''}" onclick="event.stopPropagation();toggle('${d.k}','${h.name}',this.parentElement)">${done?'✓':''}</div>
+            <div style="margin-top:3px"><span onclick="openGymModal('${h.gym}','${d.k}')"
+              style="font-size:10px;color:var(--muted2);cursor:pointer;border-bottom:1px dashed var(--muted2)">pesos</span></div>`;
+          td.onclick = null;
+        } else {
+          td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
+          td.onclick = () => toggle(d.k, h.name, td);
+        }
       } else {
         td.innerHTML = `<div style="width:20px;height:20px;display:inline-block"></div>`;
       }
@@ -887,7 +894,7 @@ function toggle(dateKey, habitName, cell) {
   state[sk] = !state[sk];
   const done = state[sk];
 
-  const box = cell.querySelector('.checkbox');
+  const box = cell.classList.contains('checkbox') ? cell : cell.querySelector('.checkbox');
   box.classList.toggle('done', done);
   box.textContent = done ? '✓' : '';
 
@@ -998,16 +1005,29 @@ async function syncToNotion(dateKey, habitName, done) {
 }
 
 // ── GYM MODAL ────────────────────────────────────────────────────────────────
-function openGymModal(routineKey) {
+function openGymModal(routineKey, dateKey) {
   const r = GYM_ROUTINES[routineKey];
   if (!r) return;
-  document.getElementById('gymModalTitle').textContent = '🏋️ ' + r.title;
+  const dateLabel = dateKey ? ` · ${dateKey.slice(5).replace('-','/')}` : '';
+  document.getElementById('gymModalTitle').textContent = '🏋️ ' + r.title + dateLabel;
   const tbody = document.getElementById('gymModalBody');
-  tbody.innerHTML = r.ejercicios.map(([ej, series]) =>
-    `<tr><td>${ej}</td><td>${series}</td><td></td></tr>`
-  ).join('');
+  tbody.innerHTML = r.ejercicios.map(([ej, series], i) => {
+    const saved = localStorage.getItem(`gym|${routineKey}|${i}|${dateKey}`) || '';
+    return `<tr>
+      <td>${ej}</td><td>${series}</td>
+      <td><input type="number" step="0.5" min="0" value="${saved}" placeholder="kg"
+        style="width:58px;background:var(--surface3);border:1px solid var(--border2);
+               border-radius:4px;padding:4px 6px;color:var(--text);font-size:12px;text-align:center;"
+        oninput="saveGymWeight('${routineKey}',${i},'${dateKey}',this.value)"/></td>
+    </tr>`;
+  }).join('');
   document.getElementById('gymModalNote').textContent = r.note;
   document.getElementById('gymOverlay').classList.add('show');
+}
+
+function saveGymWeight(routineKey, exIdx, dateKey, value) {
+  const k = `gym|${routineKey}|${exIdx}|${dateKey}`;
+  value ? localStorage.setItem(k, value) : localStorage.removeItem(k);
 }
 
 function closeGymModal(e) {
