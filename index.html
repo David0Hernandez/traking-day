@@ -308,9 +308,57 @@ input::placeholder { color: var(--muted2); }
 .sdot.err  { background: var(--red); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
+/* ── GYM MODAL ── */
+.gym-modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 500;
+  align-items: flex-end; justify-content: center;
+}
+.gym-modal-overlay.show { display: flex; }
+.gym-modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px 16px 0 0; padding: 20px 20px 32px;
+  width: 100%; max-width: 520px; max-height: 80vh; overflow-y: auto;
+}
+.gym-modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.gym-modal-title { font-size: 15px; font-weight: 700; color: var(--teal); }
+.gym-close {
+  background: var(--surface3); border: none; color: var(--muted);
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  font-size: 16px; display: flex; align-items: center; justify-content: center;
+}
+.gym-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.gym-table th {
+  background: var(--header); color: var(--muted);
+  font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  padding: 6px 10px; border: 1px solid var(--border); text-align: left;
+}
+.gym-table td {
+  padding: 7px 10px; border: 1px solid var(--border);
+  font-size: 12px; color: var(--text);
+}
+.gym-table tr:nth-child(even) td { background: var(--surface2); }
+.gym-note { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
 @media (max-width: 600px) {
-  .habit-label-col { min-width: 120px; font-size: 11px; padding: 8px; }
-  .overall-bar { gap: 12px; }
+  .habit-label-col { min-width: 110px; font-size: 11px; padding: 7px 8px; }
+  .overall-bar { gap: 10px; padding: 12px 14px; flex-wrap: wrap; }
+  .overall-ring { width: 58px; height: 58px; }
+  .overall-ring svg { width: 58px; height: 58px; }
+  .stat-box { min-width: 64px; padding: 8px 10px; }
+  .stat-val { font-size: 18px; }
+  .topbar { padding: 10px 14px; }
+  .brand-title { font-size: 15px; }
+  .week-tabs { padding: 0 10px; }
+  .week-tab { padding: 10px 12px; font-size: 11px; }
+  .sync-bar { padding: 6px 14px; font-size: 10px; }
+  .check-cell { padding: 5px; }
+  .checkbox { width: 18px; height: 18px; font-size: 11px; }
+  .progress-track { min-width: 120px; }
+  .gym-modal { border-radius: 12px 12px 0 0; }
 }
 </style>
 </head>
@@ -322,7 +370,7 @@ input::placeholder { color: var(--muted2); }
     <div class="brand-icon">📊</div>
     <div>
       <div class="brand-title">Habit Tracker 2026</div>
-      <div class="brand-sub">ABR – MAY · David</div>
+      <div class="brand-sub">JUL – AGO · David</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -336,7 +384,7 @@ input::placeholder { color: var(--muted2); }
 <!-- NOTION SETUP -->
 <div class="setup-wrap" id="setupWrap">
   <h3>⚡ Vincular con Notion</h3>
-  <p>Conecta el tracker con tu base de datos <strong>📆 Agenda ABR–MAY 2026</strong> en Notion. Solo necesitas hacer esto una vez.</p>
+  <p>Conecta el tracker con tu base de datos <strong>📆 Agenda JUL–AGO 2026</strong> en Notion. Solo necesitas hacer esto una vez.</p>
   <div class="setup-steps">
     <div class="setup-step">
       <div class="sn">1</div>
@@ -344,7 +392,7 @@ input::placeholder { color: var(--muted2); }
     </div>
     <div class="setup-step">
       <div class="sn">2</div>
-      <div class="st">Abre tu base <strong>📆 Agenda ABR–MAY 2026</strong> → <code>···</code> → <strong>Connections</strong> → agrega "Habit Tracker"</div>
+      <div class="st">Abre tu base <strong>📆 Agenda JUL–AGO 2026</strong> → <code>···</code> → <strong>Connections</strong> → agrega "Habit Tracker"</div>
     </div>
     <div class="setup-step">
       <div class="sn">3</div>
@@ -410,109 +458,76 @@ input::placeholder { color: var(--muted2); }
   <table class="habits-grid" id="mainGrid"></table>
 </div>
 
+<!-- GYM MODAL -->
+<div class="gym-modal-overlay" id="gymOverlay" onclick="closeGymModal(event)">
+  <div class="gym-modal">
+    <div class="gym-modal-header">
+      <div class="gym-modal-title" id="gymModalTitle"></div>
+      <button class="gym-close" onclick="document.getElementById('gymOverlay').classList.remove('show')">✕</button>
+    </div>
+    <table class="gym-table">
+      <thead><tr><th>Ejercicio</th><th>Series × Reps</th><th>Peso (kg)</th></tr></thead>
+      <tbody id="gymModalBody"></tbody>
+    </table>
+    <div class="gym-note" id="gymModalNote"></div>
+  </div>
+</div>
+
 <script>
 // ── DATA ────────────────────────────────────────────────────────────────────
 const WEEKS = [
   {
-    key:"S1", label:"S1 · 29 mar–4 abr", title:"Semana 1", range:"29 mar – 4 abr",
+    key:"S3", label:"S3 · 5–11 jul", title:"Semana 3", range:"5 – 11 jul",
     days:[
-      {n:"Dom",d:"29 mar",k:"2026-03-29"},
-      {n:"Lun",d:"30 mar",k:"2026-03-30"},
-      {n:"Mar",d:"31 mar",k:"2026-03-31"},
-      {n:"Mié",d:"1 abr", k:"2026-04-01"},
-      {n:"Jue",d:"2 abr", k:"2026-04-02"},
-      {n:"Vie",d:"3 abr", k:"2026-04-03"},
-      {n:"Sáb",d:"4 abr", k:"2026-04-04"},
+      {n:"Dom",d:"5 jul", k:"2026-07-05"},
+      {n:"Lun",d:"6 jul", k:"2026-07-06"},
+      {n:"Mar",d:"7 jul", k:"2026-07-07"},
+      {n:"Mié",d:"8 jul", k:"2026-07-08"},
+      {n:"Jue",d:"9 jul", k:"2026-07-09"},
+      {n:"Vie",d:"10 jul",k:"2026-07-10"},
+      {n:"Sáb",d:"11 jul",k:"2026-07-11"},
     ]
   },
   {
-    key:"S2", label:"S2 · 5–11 abr", title:"Semana 2", range:"5 – 11 abr",
+    key:"S4", label:"S4 · 12–18 jul", title:"Semana 4", range:"12 – 18 jul",
     days:[
-      {n:"Dom",d:"5 abr", k:"2026-04-05"},
-      {n:"Lun",d:"6 abr", k:"2026-04-06"},
-      {n:"Mar",d:"7 abr", k:"2026-04-07"},
-      {n:"Mié",d:"8 abr", k:"2026-04-08"},
-      {n:"Jue",d:"9 abr", k:"2026-04-09"},
-      {n:"Vie",d:"10 abr",k:"2026-04-10"},
-      {n:"Sáb",d:"11 abr",k:"2026-04-11"},
+      {n:"Dom",d:"12 jul",k:"2026-07-12"},
+      {n:"Lun",d:"13 jul",k:"2026-07-13"},
+      {n:"Mar",d:"14 jul",k:"2026-07-14"},
+      {n:"Mié",d:"15 jul",k:"2026-07-15"},
+      {n:"Jue",d:"16 jul",k:"2026-07-16"},
+      {n:"Vie",d:"17 jul",k:"2026-07-17"},
+      {n:"Sáb",d:"18 jul",k:"2026-07-18"},
     ]
   },
   {
-    key:"S3", label:"S3 · 12–18 abr", title:"Semana 3", range:"12 – 18 abr",
+    key:"S5", label:"S5 · 19–25 jul", title:"Semana 5", range:"19 – 25 jul",
     days:[
-      {n:"Dom",d:"12 abr",k:"2026-04-12"},
-      {n:"Lun",d:"13 abr",k:"2026-04-13"},
-      {n:"Mar",d:"14 abr",k:"2026-04-14"},
-      {n:"Mié",d:"15 abr",k:"2026-04-15"},
-      {n:"Jue",d:"16 abr",k:"2026-04-16"},
-      {n:"Vie",d:"17 abr",k:"2026-04-17"},
-      {n:"Sáb",d:"18 abr",k:"2026-04-18"},
+      {n:"Dom",d:"19 jul",k:"2026-07-19"},
+      {n:"Lun",d:"20 jul",k:"2026-07-20"},
+      {n:"Mar",d:"21 jul",k:"2026-07-21"},
+      {n:"Mié",d:"22 jul",k:"2026-07-22"},
+      {n:"Jue",d:"23 jul",k:"2026-07-23"},
+      {n:"Vie",d:"24 jul",k:"2026-07-24"},
+      {n:"Sáb",d:"25 jul",k:"2026-07-25"},
     ]
   },
   {
-    key:"S4", label:"S4 · 19–25 abr", title:"Semana 4", range:"19 – 25 abr",
+    key:"S6", label:"S6 · 26 jul–1 ago", title:"Semana 6", range:"26 jul – 1 ago",
     days:[
-      {n:"Dom",d:"19 abr",k:"2026-04-19"},
-      {n:"Lun",d:"20 abr",k:"2026-04-20"},
-      {n:"Mar",d:"21 abr",k:"2026-04-21"},
-      {n:"Mié",d:"22 abr",k:"2026-04-22"},
-      {n:"Jue",d:"23 abr",k:"2026-04-23"},
-      {n:"Vie",d:"24 abr",k:"2026-04-24"},
-      {n:"Sáb",d:"25 abr",k:"2026-04-25"},
-    ]
-  },
-  {
-    key:"S5", label:"S5 · 26 abr–2 may", title:"Semana 5", range:"26 abr – 2 may",
-    days:[
-      {n:"Dom",d:"26 abr",k:"2026-04-26"},
-      {n:"Lun",d:"27 abr",k:"2026-04-27"},
-      {n:"Mar",d:"28 abr",k:"2026-04-28"},
-      {n:"Mié",d:"29 abr",k:"2026-04-29"},
-      {n:"Jue",d:"30 abr",k:"2026-04-30"},
-      {n:"Vie",d:"1 may", k:"2026-05-01"},
-      {n:"Sáb",d:"2 may", k:"2026-05-02"},
-    ]
-  },
-  {
-    key:"S6", label:"S6 · 3–9 may", title:"Semana 6", range:"3 – 9 may",
-    days:[
-      {n:"Dom",d:"3 may", k:"2026-05-03"},
-      {n:"Lun",d:"4 may", k:"2026-05-04"},
-      {n:"Mar",d:"5 may", k:"2026-05-05"},
-      {n:"Mié",d:"6 may", k:"2026-05-06"},
-      {n:"Jue",d:"7 may", k:"2026-05-07"},
-      {n:"Vie",d:"8 may", k:"2026-05-08"},
-      {n:"Sáb",d:"9 may", k:"2026-05-09"},
-    ]
-  },
-  {
-    key:"S7", label:"S7 · 10–16 may", title:"Semana 7", range:"10 – 16 may",
-    days:[
-      {n:"Dom",d:"10 may",k:"2026-05-10"},
-      {n:"Lun",d:"11 may",k:"2026-05-11"},
-      {n:"Mar",d:"12 may",k:"2026-05-12"},
-      {n:"Mié",d:"13 may",k:"2026-05-13"},
-      {n:"Jue",d:"14 may",k:"2026-05-14"},
-      {n:"Vie",d:"15 may",k:"2026-05-15"},
-      {n:"Sáb",d:"16 may",k:"2026-05-16"},
-    ]
-  },
-  {
-    key:"S8", label:"S8 · 17–31 may", title:"Semana 8", range:"17 – 31 may",
-    days:[
-      {n:"Dom",d:"17 may",k:"2026-05-17"},
-      {n:"Lun",d:"18 may",k:"2026-05-18"},
-      {n:"Mar",d:"19 may",k:"2026-05-19"},
-      {n:"Mié",d:"20 may",k:"2026-05-20"},
-      {n:"Jue",d:"21 may",k:"2026-05-21"},
-      {n:"Vie",d:"22 may",k:"2026-05-22"},
-      {n:"Dom",d:"31 may",k:"2026-05-31"},
+      {n:"Dom",d:"26 jul",k:"2026-07-26"},
+      {n:"Lun",d:"27 jul",k:"2026-07-27"},
+      {n:"Mar",d:"28 jul",k:"2026-07-28"},
+      {n:"Mié",d:"29 jul",k:"2026-07-29"},
+      {n:"Jue",d:"30 jul",k:"2026-07-30"},
+      {n:"Vie",d:"31 jul",k:"2026-07-31"},
+      {n:"Sáb",d:"1 ago", k:"2026-08-01"},
     ]
   },
 ];
 
-// Hábitos con su presencia por día (true = aplica ese día)
-// lun mar mie jue vie sab dom
+// Hábitos con su presencia por día
+// dom lun mar mie jue vie sab
 const HABITS = [
   // RUTINA DIARIA (todos los días)
   { section:"Rutina diaria", emoji:"🛏", name:"Hacer la cama",
@@ -522,11 +537,23 @@ const HABITS = [
   { emoji:"📵", name:"Menos de 2h teléfono",
     days:{dom:1,lun:1,mar:1,mie:1,jue:1,vie:1,sab:1} },
 
-  // TRABAJO/ESTUDIO (días laborales)
+  // GYM (rutina específica por día)
+  { section:"Gym", emoji:"🏋️", name:"Gym – Empuje",
+    gym:"empuje",
+    days:{dom:0,lun:1,mar:0,mie:0,jue:0,vie:0,sab:0} },
+  { emoji:"🏋️", name:"Gym – Tirón",
+    gym:"tiron",
+    days:{dom:0,lun:0,mar:0,mie:1,jue:0,vie:0,sab:0} },
+  { emoji:"🏋️", name:"Gym – Piernas",
+    gym:"piernas",
+    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:1,sab:0} },
+  { emoji:"🏋️", name:"Gym – Torso (opc)",
+    gym:"torso",
+    days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:0,sab:1} },
+
+  // TRABAJO & ESTUDIO
   { section:"Trabajo & Estudio", emoji:"🥡", name:"Almuerzo empacado",
     days:{dom:0,lun:1,mar:1,mie:1,jue:1,vie:1,sab:0} },
-  { emoji:"🏋️", name:"Gym",
-    days:{dom:0,lun:1,mar:1,mie:0,jue:1,vie:1,sab:0} },
   { emoji:"🔵", name:"Inglés C1",
     days:{dom:0,lun:1,mar:0,mie:1,jue:0,vie:1,sab:1} },
   { emoji:"🟣", name:"Francés",
@@ -538,29 +565,72 @@ const HABITS = [
   { emoji:"🍁", name:"TEF Canada",
     days:{dom:0,lun:0,mar:1,mie:0,jue:1,vie:0,sab:1} },
 
-  // HOGAR (según calendario)
+  // HOGAR
   { section:"Hogar", emoji:"🛁", name:"Lavar el baño",
     days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:1,sab:0} },
   { emoji:"🏠", name:"Organizar apto",
     days:{dom:0,lun:0,mar:0,mie:0,jue:0,vie:0,sab:1} },
+  { emoji:"🧺", name:"Lavar ropa",
+    days:{dom:1,lun:0,mar:0,mie:0,jue:0,vie:0,sab:0} },
+  { emoji:"🛒", name:"Mercado",
+    days:{dom:0,lun:0,mar:0,mie:0,jue:1,vie:0,sab:0} },
 ];
 
-// Días especiales por semana
-const SPECIAL = {
-  S1:  {},
-  S2:  {"2026-04-05":"🧺 Lavar ropa", "2026-04-09":"🛒 Mercado"},
-  S3:  {},
-  S4:  {"2026-04-19":"🧺 Lavar ropa", "2026-04-23":"🛒 Mercado"},
-  S5:  {},
-  S6:  {"2026-05-03":"🧺 Lavar ropa", "2026-05-07":"🛒 Mercado"},
-  S7:  {},
-  S8:  {"2026-05-17":"🧺 Lavar ropa", "2026-05-21":"🛒 Mercado", "2026-05-31":"🧺 Lavar ropa"},
-};
+// Sin especiales — Mercado (jue) y Lavar ropa (dom) ya son hábitos regulares
+const SPECIAL = { S3:{}, S4:{}, S5:{}, S6:{} };
+const SPECIAL_HABITS = {};
 
-// Lavar ropa especial (dom cada 15 días) y mercado (jue cada 15 días)
-const SPECIAL_HABITS = {
-  "🧺 Lavar ropa": {emoji:"🧺", name:"Lavar ropa"},
-  "🛒 Mercado":    {emoji:"🛒", name:"Mercado"},
+// ── RUTINAS GYM ─────────────────────────────────────────────────────────────
+const GYM_ROUTINES = {
+  empuje: {
+    title:"Empuje · Pecho, Hombros, Tríceps",
+    note:"🚶 Terminar con 20 min de caminata inclinada",
+    ejercicios:[
+      ["Press de banca","4 × 6-8"],
+      ["Press inclinado mancuernas","3 × 8-10"],
+      ["Press militar","3 × 8-10"],
+      ["Elevaciones laterales","3 × 12-15"],
+      ["Fondos / Extensión tríceps","3 × 10-12"],
+      ["Abdominales","3 series"],
+    ]
+  },
+  tiron: {
+    title:"Tirón · Espalda, Bíceps",
+    note:"🚶 20 min de cardio",
+    ejercicios:[
+      ["Dominadas o jalón","4 × 8-10"],
+      ["Remo con barra","4 × 8-10"],
+      ["Remo en polea","3 × 10-12"],
+      ["Face pulls","3 × 15"],
+      ["Curl de bíceps con barra","3 × 10"],
+      ["Curl martillo","3 × 12"],
+    ]
+  },
+  piernas: {
+    title:"Piernas",
+    note:"🚶 15-20 min de caminata",
+    ejercicios:[
+      ["Sentadilla","4 × 6-8"],
+      ["Peso muerto rumano","3 × 8-10"],
+      ["Prensa","3 × 10-12"],
+      ["Curl femoral","3 × 12"],
+      ["Extensión de piernas","3 × 12"],
+      ["Gemelos","4 × 15"],
+    ]
+  },
+  torso: {
+    title:"Torso completo (opcional)",
+    note:"",
+    ejercicios:[
+      ["Press inclinado","3 × 10"],
+      ["Dominadas","3 × 8"],
+      ["Remo","3 × 10"],
+      ["Elevaciones laterales","3 × 15"],
+      ["Curl bíceps","3 × 12"],
+      ["Tríceps","3 × 12"],
+      ["Abdominales","3 series"],
+    ]
+  },
 };
 
 // ── STATE ────────────────────────────────────────────────────────────────────
@@ -707,7 +777,11 @@ function renderGrid() {
     // Label cell
     const labelTd = document.createElement('td');
     labelTd.className = 'habit-label-col';
-    labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
+    if (h.gym) {
+      labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span><span style="cursor:pointer;border-bottom:1px dashed var(--muted2)" onclick="openGymModal('${h.gym}')">${h.name}</span>`;
+    } else {
+      labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
+    }
     row.appendChild(labelTd);
 
     // Checkbox cells
@@ -923,6 +997,24 @@ async function syncToNotion(dateKey, habitName, done) {
   } catch(e) { console.warn('Sync error',e); }
 }
 
+// ── GYM MODAL ────────────────────────────────────────────────────────────────
+function openGymModal(routineKey) {
+  const r = GYM_ROUTINES[routineKey];
+  if (!r) return;
+  document.getElementById('gymModalTitle').textContent = '🏋️ ' + r.title;
+  const tbody = document.getElementById('gymModalBody');
+  tbody.innerHTML = r.ejercicios.map(([ej, series]) =>
+    `<tr><td>${ej}</td><td>${series}</td><td></td></tr>`
+  ).join('');
+  document.getElementById('gymModalNote').textContent = r.note;
+  document.getElementById('gymOverlay').classList.add('show');
+}
+
+function closeGymModal(e) {
+  if (e.target === document.getElementById('gymOverlay'))
+    document.getElementById('gymOverlay').classList.remove('show');
+}
+
 // ── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
   if (apiKey && dbId) {
@@ -934,7 +1026,10 @@ window.onload = () => {
     loadNotionData();
   }
   buildTabs();
-  renderGrid();
+  // Abrir semana actual automáticamente
+  const today = new Date().toISOString().split('T')[0];
+  const idx = WEEKS.findIndex(w => w.days.some(d => d.k === today));
+  selectWeek(idx >= 0 ? idx : 0);
 };
 </script>
 </body>
