@@ -308,27 +308,6 @@ input::placeholder { color: var(--muted2); }
 .sdot.err  { background: var(--red); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-/* ── PROGRESS PAGE ── */
-.progress-page { display:none; padding: 20px 24px; }
-.progress-page.show { display:block; }
-.prog-section { margin-bottom: 28px; }
-.prog-section-title { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:14px; }
-.prog-week-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-.prog-week-label { font-size:12px; color:var(--text); width:90px; flex-shrink:0; }
-.prog-bar-track { flex:1; background:var(--surface3); border-radius:4px; height:18px; overflow:hidden; position:relative; }
-.prog-bar-fill { height:100%; border-radius:4px; transition: width 0.8s ease; }
-.prog-bar-pct { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:700; color:#fff; }
-.prog-cat-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-.prog-cat-label { font-size:11px; color:var(--muted); width:110px; flex-shrink:0; }
-.prog-cat-track { flex:1; background:var(--surface3); border-radius:4px; height:12px; overflow:hidden; }
-.prog-cat-fill { height:100%; border-radius:4px; }
-.prog-cat-pct { font-size:11px; color:var(--muted); width:36px; text-align:right; flex-shrink:0; }
-.prog-stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-.prog-stat { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
-.prog-stat-val { font-size:28px; font-weight:700; color:var(--teal); }
-.prog-stat-lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:4px; }
-@media (max-width:600px) { .progress-page { padding:14px 14px; } .prog-stats-grid { grid-template-columns:repeat(2,1fr); } }
-
 /* ── GYM MODAL ── */
 .gym-modal-overlay {
   display: none; position: fixed; inset: 0;
@@ -475,24 +454,8 @@ input::placeholder { color: var(--muted2); }
 </div>
 
 <!-- MAIN GRID -->
-<div class="grid-wrap" id="gridWrap">
+<div class="grid-wrap">
   <table class="habits-grid" id="mainGrid"></table>
-</div>
-
-<!-- PROGRESS PAGE -->
-<div class="progress-page" id="progressPage">
-  <div class="prog-section">
-    <div class="prog-section-title">Progreso por semana</div>
-    <div id="progWeeks"></div>
-  </div>
-  <div class="prog-section">
-    <div class="prog-section-title">Por categoría (mes completo)</div>
-    <div id="progCats"></div>
-  </div>
-  <div class="prog-section">
-    <div class="prog-section-title">Resumen julio</div>
-    <div class="prog-stats-grid" id="progStats"></div>
-  </div>
 </div>
 
 <!-- STUDY MODAL -->
@@ -634,199 +597,48 @@ const SPECIAL_HABITS = {
   "📚 Preply": {emoji:"📚", name:"Preply · Julie R. 10:00 AM"},
 };
 
-// ── CURRÍCULO MENSUAL ────────────────────────────────────────────────────────
-// Cada semana tiene un tema diferente. Cada día tiene actividades distintas.
-// EN cubre Inglés C1 + IELTS Prep · FR cubre Francés + TEF Canada
-
-const HABIT_LANG = {
-  'Inglés C1':'EN', 'IELTS Prep':'EN',
-  'Francés':'FR',  'TEF Canada':'FR',
-};
-
-const WEEKLY_CURRICULUM = {
-  S3: {
-    EN: { tema:"Work & Career", color:"var(--blue)", sessions:{
-      lun:{ titulo:"Vocabulario + Lectura · Work",
-        acts:[["Vocabulario","workforce, networking, deadline, entrepreneur, promotion, remote work, burnout, flexible hours — escribe 1 oración con cada una.","15 min"],
-              ["Lectura IELTS","1 pasaje sobre trabajo/economía. Practica skimming (idea general) y scanning (datos específicos).","20 min"],
-              ["Gramática","Conditional II para situaciones laborales: 'If I were promoted, I would...' — 3 frases propias.","10 min"]],
-        tip:"💡 Grábate leyendo 1 párrafo del artículo. Escucha tu pronunciación — es el error más fácil de corregir."},
-      mie:{ titulo:"Listening + Grammar · Work",
-        acts:[["IELTS Listening","Sección 3 o 4 sobre entorno laboral. Toma notas mientras escuchas.","20 min"],
-              ["Gramática C1","Passive voice en contexto laboral: 'The project has been completed.' — 5 frases.","15 min"],
-              ["Vocabulario","Repasa las 8 palabras del lunes. Crea un mini-diálogo entre empleado y jefe.","10 min"]],
-        tip:"💡 En Listening: lee las preguntas ANTES de escuchar — así sabes qué buscar."},
-      vie:{ titulo:"Writing + Speaking · Work",
-        acts:[["IELTS Writing Task 2","Essay: 'Remote work has more advantages than disadvantages. Discuss.' 250 palabras, cronométrate 40 min.","40 min"],
-              ["Speaking Part 2","Grábate: 'Describe a job you would like to have. What skills does it require?' — 2 min.","5 min"]],
-        tip:"💡 Estructura del essay: Intro (1 oración paráfrasis + tesis) → Argumento 1 → Argumento 2 → Conclusión."},
-      sab:{ titulo:"Consolidación + Preply · Work",
-        acts:[["Repaso vocabulario","Escribe las 8 palabras sin mirar. ¿Cuántas recuerdas?","10 min"],
-              ["Podcast nativo","BBC 6 Minute English o WorkLife podcast. Anota 3 expresiones nuevas.","20 min"],
-              ["Speaking espontáneo","¿What are the pros and cons of working from home? — 2 min sin preparar.","5 min"]],
-        tip:"💡 Clase con Julie hoy — usa las palabras de la semana y pídele feedback en tu pronunciación."}}},
-    FR: { tema:"Travail & Carrière", color:"var(--teal)", sessions:{
-      lun:{ titulo:"Vocabulaire + Lecture · Travail",
-        acts:[["Vocabulaire","le marché du travail, l'embauche, le licenciement, la formation, le télétravail, le salaire, la promotion, les compétences — 1 phrase chacun.","15 min"],
-              ["Lecture","Article Radio-Canada sur le travail au Québec. Note la structure argumentative.","15 min"],
-              ["Grammaire","Le subjonctif présent: 'Il faut que je trouve un emploi.' — 3 exemples propres.","10 min"]],
-        tip:"💡 Le subjonctif est très fréquent dans les textes formels du TEF — pratique-le chaque jour."},
-      mie:{ titulo:"Grammaire + Expression · Travail",
-        acts:[["Compréhension orale","Podcast Radio-Canada sur l'emploi. Écoute 2x, note les faits clés.","20 min"],
-              ["Expression écrite TEF","Email formel (200 mots): tu postules pour un emploi. Utilise le vocabulaire du lundi.","20 min"]],
-        tip:"💡 Email formel: 'Madame, Monsieur,' (jamais 'Bonjour' seul) + 'Veuillez agréer mes salutations' pour fermer."},
-      mar:{ titulo:"Compréhension TEF · Travail",
-        acts:[["Compréhension de l'oral","Simulacro TEF 15 min — documents sonores sur le monde du travail.","15 min"],
-              ["Compréhension de l'écrit","Texte B2 sur le travail avec questions à choix multiples.","15 min"],
-              ["Vocabulaire","Repasse 5 mots de lundi. Crée 2 phrases qui combinent 2 mots chacune.","10 min"]],
-        tip:"💡 TEF: élimine d'abord les réponses clairement fausses — ça augmente tes chances."},
-      jue:{ titulo:"Expression écrite TEF · Travail",
-        acts:[["Expression écrite","Rédaction TEF (200-250 mots): 'Le télétravail favorise-t-il l'équilibre travail-vie personnelle?'","30 min"],
-              ["Expression orale","Monologue 3 min: 'Quels métiers sont en forte demande au Canada?' Enregistre-toi.","10 min"]],
-        tip:"💡 TEF Expression écrite: intro + 2 arguments développés (exemple concret chacun) + conclusion — 200 mots minimum."},
-      sab:{ titulo:"Expression orale + Révision · Travail",
-        acts:[["Expression orale TEF","3 min: 'Quels sont les avantages et inconvénients du télétravail?' Enregistre-toi.","5 min"],
-              ["Révision vocabulaire","8 mots de la semaine sans regarder.","10 min"],
-              ["Compréhension écrite","Texte B2 sur les compétences professionnelles.","15 min"]],
-        tip:"💡 Expression orale TEF: structure claire — introduis le sujet (30 sec) → 2 arguments (1 min chacun) → conclusion (30 sec)."}}},
+// ── RUTINAS DE ESTUDIO ───────────────────────────────────────────────────────
+const STUDY_ROUTINES = {
+  'Inglés C1': {
+    title: '🔵 Inglés C1 — Sesión del día',
+    color: 'var(--blue)',
+    tareas: [
+      ['Vocabulario', 'Aprende 8-10 colocaciones o phrasal verbs nuevos. Escríbelos en una oración.', '15 min'],
+      ['Podcast nativo', 'BBC 6 Minute English, TED o serie en inglés. Escucha activa — anota palabras nuevas.', '15 min'],
+      ['IELTS Reading', '1 pasaje completo con preguntas. Practica skimming y scanning.', '20 min'],
+      ['Speaking solo', 'Elige un tema (trabajo, tecnología, medio ambiente) y habla 2 min grabado. Escúchate.', '5 min'],
+    ],
+    tip: '💡 Tu mayor falencia: vocabulario formal y fluidez al hablar. Grábate siempre — el oído te corrige más que las reglas.'
   },
-  S4: {
-    EN: { tema:"Environment & Science", color:"var(--blue)", sessions:{
-      lun:{ titulo:"Vocabulario + Lectura · Environment",
-        acts:[["Vocabulario","climate change, carbon footprint, renewable energy, biodiversity, deforestation, sustainability, greenhouse gas, ecosystem — 1 oración cada uno.","15 min"],
-              ["Lectura IELTS","Pasaje sobre cambio climático o energías renovables. Subraya vocabulario del tema.","20 min"],
-              ["Gramática","Modals of deduction: 'Global temperatures must be rising because...' — 3 frases con evidencia.","10 min"]],
-        tip:"💡 'Sustainability' y 'climate change' son los temas IELTS más frecuentes — prepara 4 argumentos pro y 3 contra."},
-      mie:{ titulo:"Listening + Grammar · Environment",
-        acts:[["IELTS Listening","Sección 4 — monólogo académico sobre medioambiente. Practica nota-toma.","20 min"],
-              ["Gramática C1","Passive + perfect: 'Temperatures have been rising for decades.' — 5 frases sobre el medioambiente.","15 min"],
-              ["Vocabulario","Repasa las 8 palabras. Crea un 'mapa mental' conectándolas.","10 min"]],
-        tip:"💡 En Listening sección 4: no hay pausa entre preguntas — escribe palabras clave y completa después."},
-      vie:{ titulo:"Writing + Speaking · Environment",
-        acts:[["IELTS Writing Task 2","'Governments should impose higher taxes on fossil fuels.' Do you agree? 250 palabras, 40 min.","40 min"],
-              ["Speaking Part 2","'Describe an environmental problem in your country. What can be done?' — 2 min grabado.","5 min"]],
-        tip:"💡 Evita 'very important' — usa 'crucial', 'essential', 'paramount'. Eleva tu léxico en 1 línea."},
-      sab:{ titulo:"Consolidación · Environment",
-        acts:[["Repaso","8 palabras de la semana. Flashcards sin mirar.","10 min"],
-              ["TED Talk","TED sobre medioambiente con subtítulos. Anota 3 argumentos clave.","20 min"],
-              ["Speaking espontáneo","'What should individuals do to reduce their carbon footprint?' — 2 min sin preparar.","5 min"]],
-        tip:"💡 Prepara 3 argumentos pro-medioambiente y 3 contra regulaciones — ambos lados aparecen en IELTS."}}},
-    FR: { tema:"Environnement & Science", color:"var(--teal)", sessions:{
-      lun:{ titulo:"Vocabulaire + Lecture · Environnement",
-        acts:[["Vocabulaire","le réchauffement climatique, l'empreinte carbone, les énergies renouvelables, la biodiversité, le développement durable, la pollution, l'écosystème, le tri sélectif.","15 min"],
-              ["Lecture","Article scientifique ou écologique (Le Monde/Radio-Canada). Note la structure argumentative.","15 min"],
-              ["Grammaire","Le conditionnel pour recommandations: 'Si nous réduisions nos émissions, la température baisserait.' — 3 exemples.","10 min"]],
-        tip:"💡 Le conditionnel est essentiel dans l'expression écrite TEF pour donner des recommandations."},
-      mie:{ titulo:"Grammaire + Expression · Environnement",
-        acts:[["Compréhension orale","Reportage Radio-Canada sur l'environnement. Note chiffres et faits clés.","20 min"],
-              ["Expression écrite TEF","'Quelles mesures les gouvernements devraient-ils prendre contre le changement climatique?' 200 mots.","20 min"]],
-        tip:"💡 Intro TEF: commence par un fait frappant ou une statistique — ça capte l'attention du correcteur."},
-      mar:{ titulo:"Compréhension TEF · Environnement",
-        acts:[["Compréhension de l'oral","Simulacro TEF 15 min — documents sur environnement et sciences.","15 min"],
-              ["Compréhension de l'écrit","Texte B2 sur développement durable avec questions.","15 min"],
-              ["Vocabulaire","Repasse 5 mots de lundi dans des phrases.","10 min"]],
-        tip:"💡 Dans les textes scientifiques: repère les connecteurs logiques (donc, ainsi, par conséquent) — ils guident les réponses."},
-      jue:{ titulo:"Expression écrite TEF · Environnement",
-        acts:[["Expression écrite","Rédaction TEF: 'L'individu peut-il vraiment changer le monde en adoptant un mode de vie écologique?' 200-250 mots.","30 min"],
-              ["Expression orale","3 min: 'Que feriez-vous si vous étiez ministre de l'Environnement?' Enregistre-toi.","10 min"]],
-        tip:"💡 Varie tes connecteurs: 'néanmoins', 'en revanche', 'par ailleurs', 'c'est pourquoi' — le TEF valorise la richesse lexicale."},
-      sab:{ titulo:"Expression orale + Révision · Environnement",
-        acts:[["Expression orale TEF","3 min: 'L'environnement est-il vraiment prioritaire pour les gouvernements?' Enregistre-toi.","5 min"],
-              ["Révision vocabulaire","8 mots de la semaine sans regarder.","10 min"],
-              ["Compréhension écrite","Texte B2 sur l'environnement avec questions TEF.","15 min"]],
-        tip:"💡 Pour la compréhension orale TEF: la 1ère écoute sert à comprendre le contexte; la 2ème à trouver les réponses précises."}}},
+  'IELTS Prep': {
+    title: '🎓 IELTS Prep — Práctica oficial',
+    color: 'var(--purple)',
+    tareas: [
+      ['Writing Task 2', 'Essay de opinión (250 palabras mínimo). Estructura: intro + 2 párrafos + conclusión. Cronométrate 40 min.', '40 min'],
+      ['Listening Sec. 3-4', 'Las secciones más difíciles del IELTS. Practica nota-toma mientras escuchas.', '15 min'],
+      ['Vocabulario AWL', 'Academic Word List: 10 palabras, definición, ejemplo y sinónimo.', '10 min'],
+    ],
+    tip: '💡 IELTS C1 = Band 7.0+. En Writing: usa conectores variados, evita repetir palabras, párrafos con idea clara + evidencia + cierre.'
   },
-  S5: {
-    EN: { tema:"Society & Immigration", color:"var(--blue)", sessions:{
-      lun:{ titulo:"Vocabulario + Lectura · Society",
-        acts:[["Vocabulario","multiculturalism, integration, diversity, refugee, permanent resident, skilled worker, assimilation, cultural heritage — 1 oración cada uno.","15 min"],
-              ["Lectura IELTS","Artículo sobre inmigración en Canadá (CBC). ¿Cuáles son los argumentos a favor y en contra?","20 min"],
-              ["Gramática","Reported speech académico: 'Studies suggest that immigrants contribute significantly to...' — 3 citas.","10 min"]],
-        tip:"💡 Este tema es tuyo — conecta con tu experiencia migrando a Canadá. Los argumentos auténticos suenan mejor en Speaking."},
-      mie:{ titulo:"Listening + Grammar · Society",
-        acts:[["IELTS Listening","Sección sobre política social o inmigración. Practica completar tabla.","20 min"],
-              ["Gramática C1","Cleft sentences: 'It is immigration that drives economic growth.' — 4 frases propias.","15 min"],
-              ["Vocabulario","Repasa las 8 palabras en un párrafo cohesivo.","10 min"]],
-        tip:"💡 Cleft sentences (It is... that...) son marcador claro de C1 en Writing — aprende 3 estructuras diferentes."},
-      vie:{ titulo:"Writing + Speaking · Society",
-        acts:[["IELTS Writing Task 2","'Immigration brings more benefits than problems to host countries.' Do you agree? 250 palabras, 40 min.","40 min"],
-              ["Speaking Part 2","'Describe a challenge you faced when moving to a new place.' — 2 min grabado.","5 min"]],
-        tip:"💡 Usa 'hedging language': 'It could be argued that...', 'There is evidence to suggest...' — elevan tu nivel inmediatamente."},
-      sab:{ titulo:"Consolidación · Society",
-        acts:[["Repaso","8 palabras de la semana en flashcards.","10 min"],
-              ["Podcast","CBC Ideas o 99% Invisible sobre sociedad/cultura. Anota 3 argumentos.","20 min"],
-              ["Speaking espontáneo","'What are the biggest challenges immigrants face?' — 2 min sin preparar.","5 min"]],
-        tip:"💡 Practica: 'On the one hand... On the other hand... However, I believe...' — estructura básica de Speaking Part 3."}}},
-    FR: { tema:"Société & Immigration", color:"var(--teal)", sessions:{
-      lun:{ titulo:"Vocabulaire + Lecture · Société",
-        acts:[["Vocabulaire","le multiculturalisme, l'intégration, la diversité, le résident permanent, le demandeur d'asile, la citoyenneté, le bénévolat, la cohésion sociale.","15 min"],
-              ["Lecture","Article sur l'immigration au Canada (Radio-Canada). Note la position de l'auteur.","15 min"],
-              ["Grammaire","Le discours indirect: 'Il a dit qu'il voulait s'intégrer.' — transforme 3 citations directes.","10 min"]],
-        tip:"💡 Ce thème est directement lié au TEF Canada — l'examinateur s'attend à ce que tu maîtrises ce vocabulaire."},
-      mie:{ titulo:"Grammaire + Expression · Société",
-        acts:[["Compréhension orale","Débat Radio-Canada sur l'immigration. Identifie 2 arguments pour et 2 contre.","20 min"],
-              ["Expression écrite TEF","'L'immigration est-elle une richesse ou un défi pour la société québécoise?' 200 mots.","20 min"]],
-        tip:"💡 Québec a un rapport particulier avec l'immigration et la langue — connais ce contexte pour le TEF."},
-      mar:{ titulo:"Compréhension TEF · Société",
-        acts:[["Compréhension de l'oral","Simulacro TEF — documents sur intégration et société.","15 min"],
-              ["Compréhension de l'écrit","Texte B2 sur la diversité culturelle avec questions.","15 min"],
-              ["Vocabulaire","Repasse 5 mots de lundi.","10 min"]],
-        tip:"💡 Pour les textes sur la société: cherche le mot-clé de chaque paragraphe — il te guide vers la bonne réponse."},
-      jue:{ titulo:"Expression écrite TEF · Société",
-        acts:[["Expression écrite","'La société québécoise est-elle suffisamment inclusive envers les immigrants?' 200-250 mots.","30 min"],
-              ["Expression orale","3 min: 'Quels défis rencontrent les immigrants au Canada?' Enregistre-toi.","10 min"]],
-        tip:"💡 Pour le TEF: évite les mots trop informels ('genre', 'truc'). Opte pour 'notamment', 'en effet', 'par conséquent'."},
-      sab:{ titulo:"Expression orale + Révision · Société",
-        acts:[["Expression orale TEF","3 min: 'Quels sont les avantages et défis de l'immigration pour le Canada?' Enregistre-toi.","5 min"],
-              ["Révision vocabulaire","8 mots de la semaine. 4 phrases qui combinent 2 mots chacune.","10 min"],
-              ["Compréhension écrite","Texte B2 sur intégration sociale avec questions TEF.","15 min"]],
-        tip:"💡 Structure orale TEF: présente le sujet (30 sec) → argument 1 + exemple (60 sec) → argument 2 + exemple (60 sec) → conclusion (30 sec)."}}},
+  'Francés': {
+    title: '🟣 Francés — Sesión del día',
+    color: 'var(--purple)',
+    tareas: [
+      ['Vocabulario temático', 'Elige un tema (trabajo, salud, immigration, culture). Aprende 8 palabras con contexto.', '10 min'],
+      ['Radio-Canada / Podcast', 'Escucha activa con transcripción. Pausa y repite frases difíciles.', '15 min'],
+      ['Lectura + resumen', 'Lee un artículo en francés. Escribe 3 líneas de resumen en francés.', '15 min'],
+    ],
+    tip: '💡 Habla en voz alta mientras lees — activa el oído. El mayor error en francés escrito: olvidar los accents (é, è, ê, à, ù) y el género.'
   },
-  S6: {
-    EN: { tema:"Technology & Future", color:"var(--blue)", sessions:{
-      lun:{ titulo:"Vocabulario + Lectura · Technology",
-        acts:[["Vocabulario","artificial intelligence, automation, digital divide, data privacy, algorithm, cybersecurity, machine learning, disruptive technology — 1 oración cada uno.","15 min"],
-              ["Lectura IELTS","Artículo sobre IA y el futuro del trabajo. ¿Qué predice el autor?","20 min"],
-              ["Gramática","Future perfect: 'By 2030, AI will have replaced...' — 3 predicciones propias.","10 min"]],
-        tip:"💡 Tecnología es tema muy frecuente en IELTS — prepara 4 argumentos pro y 3 contra la IA."},
-      mie:{ titulo:"Listening + Grammar · Technology",
-        acts:[["IELTS Listening","Sección académica sobre tecnología. Practica preguntas de opción múltiple.","20 min"],
-              ["Gramática C1","Inversion: 'Not only has AI transformed industry, but it has also...' — 4 frases.","15 min"],
-              ["Vocabulario","Repasa las 8 palabras. Conecta cada una con un ejemplo real.","10 min"]],
-        tip:"💡 Inversion (Not only..., Rarely..., Hardly...) es marcador claro de C1 — memoriza 3 estructuras."},
-      vie:{ titulo:"Writing + Speaking · Technology",
-        acts:[["IELTS Writing Task 2","'Technology has made people more isolated than ever before.' To what extent do you agree? 250 palabras, 40 min.","40 min"],
-              ["Speaking Part 2","'Describe a piece of technology that changed your life.' — 2 min grabado.","5 min"]],
-        tip:"💡 Última semana de julio — haz un mini-test IELTS completo este fin de semana para medir tu progreso total."},
-      sab:{ titulo:"Consolidación julio · Technology",
-        acts:[["Repaso julio","Revisa los mejores 15 términos del mes. ¿Cuáles aún no dominas?","15 min"],
-              ["Speaking Part 3","'How will AI change education in the next decade?' — 2 min sin preparar.","10 min"],
-              ["Plan agosto","Define tu área más débil (Reading/Writing/Speaking/Listening) y conviértela en prioridad agosto.","5 min"]],
-        tip:"💡 Fin de julio: haz un IELTS practice test completo (British Council ofrece uno gratuito online)."}},},
-    FR: { tema:"Technologie & Avenir", color:"var(--teal)", sessions:{
-      lun:{ titulo:"Vocabulaire + Lecture · Technologie",
-        acts:[["Vocabulaire","l'intelligence artificielle, l'automatisation, la vie privée, la fracture numérique, l'algorithme, la cybersécurité, les données personnelles, l'innovation.","15 min"],
-              ["Lecture","Article sur la technologie au Québec/Canada (Radio-Canada). Note le point de vue.","15 min"],
-              ["Grammaire","Le futur antérieur: 'D'ici 2030, l'IA aura remplacé...' — 3 prédictions.","10 min"]],
-        tip:"💡 La technologie est un sujet fréquent au TEF — prépare 3 arguments pour et 3 contre l'IA."},
-      mie:{ titulo:"Grammaire + Expression · Technologie",
-        acts:[["Compréhension orale","Débat France Culture/Radio-Canada sur l'IA. Note les positions clés.","20 min"],
-              ["Expression écrite TEF","'La technologie rapproche-t-elle les gens ou les isole-t-elle?' 200 mots avec exemples concrets.","20 min"]],
-        tip:"💡 Dans l'expression écrite TEF: cite un exemple concret par argument — ça montre que tu maîtrises le sujet."},
-      mar:{ titulo:"Compréhension TEF · Technologie",
-        acts:[["Compréhension de l'oral","Simulacro TEF — documents sur technologie et société.","15 min"],
-              ["Compréhension de l'écrit","Texte B2 sur l'intelligence artificielle avec questions.","15 min"],
-              ["Vocabulaire","Repasse 5 mots de lundi.","10 min"]],
-        tip:"💡 Dernière semaine de juillet — renforce ta compréhension, c'est la compétence qui progresse le plus vite."},
-      jue:{ titulo:"Expression écrite TEF · Technologie + Bilan",
-        acts:[["Expression écrite","'L'IA va-t-elle améliorer ou nuire à notre qualité de vie?' 200-250 mots.","30 min"],
-              ["Bilan juillet","Liste 3 points forts et 3 points à améliorer en français ce mois-ci.","10 min"]],
-        tip:"💡 Fin juillet: fais un test TEF blanc complet. Identifie la partie la plus faible pour août."},
-      sab:{ titulo:"Expression orale + Bilan juillet",
-        acts:[["Expression orale TEF","3 min: 'L'intelligence artificielle va-t-elle améliorer ou nuire à notre société?' Enregistre-toi.","5 min"],
-              ["Révision vocabulaire","15 meilleurs mots du mois. Lesquels ne maîtrises-tu pas encore?","10 min"],
-              ["Compréhension écrite","Texte B2 sur technologie — dernier simulacro du mois.","15 min"]],
-        tip:"💡 Bravo pour le mois de juillet! Évalue ton niveau TEF avec un test blanc complet avant août."}},},
+  'TEF Canada': {
+    title: '🍁 TEF Canada — Simulacro',
+    color: 'var(--green)',
+    tareas: [
+      ['Compréhension de l\'oral', 'Simulacro formato TEF: 3 documentos, 40 min. Anota palabras clave.', '15 min'],
+      ['Compréhension de l\'écrit', 'Textos nivel B2 con preguntas de opción múltiple. Practica eliminar respuestas.', '15 min'],
+      ['Expression écrite', 'Rédaction TEF: 200-250 mots, registro formal. Revisa subjuntivo y condicional.', '15 min'],
+    ],
+    tip: '💡 TEF Canada requiere B2 mínimo. Expression orale: prepara 5 temas (famille, travail, société, loisirs, environnement) con argumentos listos.'
   },
 };
 
@@ -923,124 +735,17 @@ function buildTabs() {
   el.innerHTML = '';
   WEEKS.forEach((w,i) => {
     const t = document.createElement('div');
-    t.className = 'week-tab';
+    t.className = 'week-tab' + (i===0?' active':'');
     t.textContent = w.label;
     t.onclick = () => selectWeek(i);
     el.appendChild(t);
   });
-  // Tab Progreso
-  const tp = document.createElement('div');
-  tp.className = 'week-tab';
-  tp.id = 'tabProgreso';
-  tp.textContent = '📊 Progreso';
-  tp.onclick = () => showProgress();
-  el.appendChild(tp);
-}
-
-function showProgress() {
-  document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tabProgreso').classList.add('active');
-  document.getElementById('gridWrap').style.display = 'none';
-  document.getElementById('progressPage').classList.add('show');
-  document.getElementById('weekTitle').textContent = 'Progreso julio';
-  document.getElementById('weekRange').textContent = '5 jul – 1 ago 2026';
-  renderProgress();
-}
-
-function renderProgress() {
-  // Calcular progreso por semana
-  const weekColors = ['var(--teal)','var(--blue)','var(--green)','var(--yellow)'];
-  let weeksHtml = '';
-  let totalDone = 0, totalTotal = 0, perfectDays = 0;
-
-  WEEKS.forEach((week, wi) => {
-    let wd = 0, wt = 0, wPerfect = 0;
-    week.days.forEach((d,i) => {
-      const dayOfWeeks = week.days.map(dd => {
-        const nm = dd.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-        const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-        return map[nm.slice(0,3)] ?? 0;
-      });
-      const dayHabits = habitsForDay(week.key, d.k, dayOfWeeks[i]);
-      const done = dayHabits.filter(h => !!state[`${d.k}|${h.name}`]).length;
-      const total = dayHabits.length;
-      if (total > 0) {
-        wd += done; wt += total;
-        if (done === total) { wPerfect++; perfectDays++; }
-      }
-    });
-    const pct = wt ? Math.round(wd/wt*100) : 0;
-    totalDone += wd; totalTotal += wt;
-    const col = pct >= 80 ? 'var(--teal)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
-    weeksHtml += `<div class="prog-week-row">
-      <div class="prog-week-label">${week.label.split('·')[1]?.trim() || week.label}</div>
-      <div class="prog-bar-track">
-        <div class="prog-bar-fill" style="width:${pct}%;background:${col}"></div>
-        <div class="prog-bar-pct">${pct}%</div>
-      </div>
-      <div style="font-size:11px;color:var(--muted);width:40px;text-align:right">${wd}/${wt}</div>
-    </div>`;
-  });
-  document.getElementById('progWeeks').innerHTML = weeksHtml;
-
-  // Progreso por categoría
-  const cats = { 'Rutina diaria':['Hacer la cama','Leer (30 min)','Menos de 2h teléfono'],
-    'Gym':['Gym – Empuje','Gym – Tirón','Gym – Piernas','Gym – Torso (opc)'],
-    'Estudio':['Inglés C1','IELTS Prep','Francés','TEF Canada'],
-    'Hogar':['Lavar el baño','Organizar apto','Lavar ropa','Mercado'],
-    'Trabajo':['Almuerzo empacado','TradeBot'] };
-  const catColors = {'Rutina diaria':'var(--teal)','Gym':'var(--blue)','Estudio':'var(--purple)','Hogar':'var(--green)','Trabajo':'var(--yellow)'};
-  let catsHtml = '';
-  Object.entries(cats).forEach(([cat, names]) => {
-    let cd = 0, ct = 0;
-    WEEKS.forEach(week => {
-      week.days.forEach(d => {
-        names.forEach(name => {
-          const habit = HABITS.find(h => h.name === name);
-          if (!habit) return;
-          const nm = d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-          const map = {dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6};
-          const dn = DAY_NAMES[map[nm.slice(0,3)] ?? 0];
-          if (habit.days[dn]) { ct++; if (state[`${d.k}|${name}`]) cd++; }
-        });
-      });
-    });
-    const pct = ct ? Math.round(cd/ct*100) : 0;
-    catsHtml += `<div class="prog-cat-row">
-      <div class="prog-cat-label">${cat}</div>
-      <div class="prog-cat-track"><div class="prog-cat-fill" style="width:${pct}%;background:${catColors[cat]}"></div></div>
-      <div class="prog-cat-pct">${pct}%</div>
-    </div>`;
-  });
-  document.getElementById('progCats').innerHTML = catsHtml;
-
-  // Stats totales
-  const overallPct = totalTotal ? Math.round(totalDone/totalTotal*100) : 0;
-  document.getElementById('progStats').innerHTML = `
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--teal)">${overallPct}%</div><div class="prog-stat-lbl">Cumplimiento total</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--blue)">${totalDone}</div><div class="prog-stat-lbl">Hábitos completados</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--green)">${perfectDays}</div><div class="prog-stat-lbl">Días perfectos 💯</div></div>
-    <div class="prog-stat"><div class="prog-stat-val" style="color:var(--yellow)">${totalTotal - totalDone}</div><div class="prog-stat-lbl">Pendientes</div></div>`;
-
-  // Update ring
-  const col = overallPct >= 80 ? 'var(--teal)' : overallPct >= 50 ? 'var(--yellow)' : 'var(--red)';
-  const offset = Math.round(201 - (overallPct/100)*201);
-  document.getElementById('ringFill').style.strokeDashoffset = offset;
-  document.getElementById('ringFill').style.stroke = col;
-  document.getElementById('ringPct').textContent = overallPct+'%';
-  document.getElementById('ringPct').style.color = col;
-  document.getElementById('statDone').textContent = totalDone;
-  document.getElementById('statTotal').textContent = totalTotal;
-  document.getElementById('statPerfect').textContent = perfectDays;
-  document.getElementById('progressFill').style.width = overallPct+'%';
 }
 
 function selectWeek(idx) {
   currentWeek = idx;
   document.querySelectorAll('.week-tab').forEach((t,i)=>
     t.classList.toggle('active', i===idx));
-  document.getElementById('gridWrap').style.display = '';
-  document.getElementById('progressPage').classList.remove('show');
   renderGrid();
 }
 
@@ -1136,7 +841,7 @@ function renderGrid() {
     labelTd.className = 'habit-label-col';
     if (h.gym) {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
-    } else if (HABIT_LANG[h.name]) {
+    } else if (STUDY_ROUTINES[h.name]) {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span><span style="cursor:pointer;border-bottom:1px dashed var(--muted2)" onclick="openStudyModal('${h.name}')">${h.name}</span>`;
     } else {
       labelTd.innerHTML = `<span style="margin-right:6px">${h.emoji}</span>${h.name}`;
@@ -1157,11 +862,6 @@ function renderGrid() {
           td.innerHTML = `<div class="checkbox${done?' done':''}" onclick="event.stopPropagation();toggle('${d.k}','${h.name}',this.parentElement)">${done?'✓':''}</div>
             <div style="margin-top:3px"><span onclick="openGymModal('${h.gym}','${d.k}')"
               style="font-size:10px;color:var(--muted2);cursor:pointer;border-bottom:1px dashed var(--muted2)">pesos</span></div>`;
-          td.onclick = null;
-        } else if (HABIT_LANG[h.name]) {
-          td.innerHTML = `<div class="checkbox${done?' done':''}" onclick="event.stopPropagation();toggle('${d.k}','${h.name}',this.parentElement)">${done?'✓':''}</div>
-            <div style="margin-top:3px"><span onclick="openStudyModal('${h.name}','${week.key}','${d.k}')"
-              style="font-size:10px;color:var(--muted2);cursor:pointer;border-bottom:1px dashed var(--muted2)">sesión</span></div>`;
           td.onclick = null;
         } else {
           td.innerHTML = `<div class="checkbox${done?' done':''}">${done?'✓':''}</div>`;
@@ -1369,36 +1069,20 @@ async function syncToNotion(dateKey, habitName, done) {
 }
 
 // ── STUDY MODAL ──────────────────────────────────────────────────────────────
-function getDayName(dateKey) {
-  const d = new Date(dateKey + 'T12:00:00');
-  return ['dom','lun','mar','mie','jue','vie','sab'][d.getDay()];
-}
-
-function openStudyModal(habitName, weekKey, dateKey) {
-  const lang = HABIT_LANG[habitName];
-  if (!lang) return;
-  const week = WEEKLY_CURRICULUM[weekKey] || WEEKLY_CURRICULUM[WEEKS[currentWeek].key];
-  const curriculum = week ? week[lang] : null;
-  const dayName = dateKey ? getDayName(dateKey) : null;
-  const session = curriculum && dayName ? curriculum.sessions[dayName] : null;
-
-  const color = curriculum ? curriculum.color : 'var(--teal)';
-  const tema = curriculum ? curriculum.tema : habitName;
-  const titulo = session ? session.titulo : `${habitName} — ${tema}`;
-  const acts = session ? session.acts : [['Sesión del día','Revisa el currículo de esta semana.','—']];
-  const tip = session ? session.tip : '';
-
-  document.getElementById('studyModalTitle').textContent = titulo;
-  document.getElementById('studyModalTitle').style.color = color;
-  document.getElementById('studyModalBody').innerHTML = acts.map(([nombre, desc, tiempo]) => `
+function openStudyModal(habitName) {
+  const r = STUDY_ROUTINES[habitName];
+  if (!r) return;
+  document.getElementById('studyModalTitle').textContent = r.title;
+  document.getElementById('studyModalTitle').style.color = r.color;
+  document.getElementById('studyModalBody').innerHTML = r.tareas.map(([nombre, desc, tiempo]) => `
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <span style="font-size:13px;font-weight:600;color:var(--text)">${nombre}</span>
-        <span style="font-size:11px;color:${color};background:var(--surface3);padding:2px 8px;border-radius:12px;">${tiempo}</span>
+        <span style="font-size:11px;color:${r.color};background:var(--surface3);padding:2px 8px;border-radius:12px;">${tiempo}</span>
       </div>
-      <div style="font-size:11px;color:var(--muted);line-height:1.7">${desc}</div>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">${desc}</div>
     </div>`).join('');
-  document.getElementById('studyModalTip').textContent = tip;
+  document.getElementById('studyModalTip').textContent = r.tip;
   document.getElementById('studyOverlay').classList.add('show');
 }
 
