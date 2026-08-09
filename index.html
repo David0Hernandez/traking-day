@@ -390,6 +390,7 @@ input::placeholder { color: var(--muted2); }
 .prog-stat-card .lbl { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-top:4px; }
 .gym-ex-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:20px; padding:5px 12px; font-size:11px; color:var(--muted); cursor:pointer; transition:all .2s; }
 .gym-ex-btn.active { background:var(--teal); border-color:var(--teal); color:#0f1b2d; font-weight:700; }
+.gym-group-label { width:100%; font-size:10px; font-weight:700; color:var(--yellow); text-transform:uppercase; letter-spacing:.08em; padding:6px 0 2px; }
 .habit-rank-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
 .habit-rank-name { font-size:11px; color:var(--text); width:130px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .habit-rank-track { flex:1; background:var(--surface3); border-radius:3px; height:10px; overflow:hidden; }
@@ -1646,11 +1647,19 @@ function renderProgressCharts() {
     });
   }
 
-  // Selector de ejercicio gym
+  // Selector de ejercicio gym agrupado por rutina
   const sel = document.getElementById('gymExSelector');
-  sel.innerHTML = gymSessions.map((ex,i) =>
-    `<div class="gym-ex-btn${i===_selectedGymEx?' active':''}" onclick="selectGymEx(${i})">${ex.label.split(' (')[0]}</div>`
-  ).join('');
+  const routineTitles = { empuje: GYM_ROUTINES.empuje.title, tiron: GYM_ROUTINES.tiron.title, piernas: GYM_ROUTINES.piernas.title, torso: GYM_ROUTINES.torso.title };
+  let selHTML = '';
+  let lastKey = null;
+  gymSessions.forEach((ex, i) => {
+    if (ex.routineKey !== lastKey) {
+      lastKey = ex.routineKey;
+      selHTML += `<div class="gym-group-label">${routineTitles[ex.routineKey]}</div>`;
+    }
+    selHTML += `<div class="gym-ex-btn${i===_selectedGymEx?' active':''}" onclick="selectGymEx(${i})">${ex.label.split(' (')[0]}</div>`;
+  });
+  sel.innerHTML = selHTML;
   buildGymChart(_selectedGymEx);
 
   // ── 6. Ranking de hábitos ─────────────────────────────────────────────────
