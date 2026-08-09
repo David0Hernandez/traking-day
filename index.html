@@ -1461,14 +1461,14 @@ function habitsForDay(weekKey, dateKey, dayOfWeek) {
 function buildTabs() {
   const el = document.getElementById('weekTabs');
   el.innerHTML = '';
-  WEEKS.forEach((w,i) => {
-    const t = document.createElement('div');
-    t.className = 'week-tab';
-    t.textContent = w.label;
-    t.onclick = () => selectWeek(i);
-    el.appendChild(t);
-  });
-  // Tab Progreso
+  const today = new Date().toISOString().split('T')[0];
+  const curIdx = WEEKS.findIndex(w => w.days.some(d => d.k === today));
+  const showIdx = curIdx >= 0 ? curIdx : 0;
+  const t = document.createElement('div');
+  t.className = 'week-tab';
+  t.textContent = WEEKS[showIdx].label;
+  t.onclick = () => selectWeek(showIdx);
+  el.appendChild(t);
   const tp = document.createElement('div');
   tp.className = 'week-tab';
   tp.id = 'tabProgreso';
@@ -1599,14 +1599,19 @@ function renderProgressCharts() {
 
   // ── 5. Chart gym ──────────────────────────────────────────────────────────
   // Ejercicios de cada rutina con sus días de sesión
-  const gymSessions = [
-    { routineKey:'empuje', exIdx:0, label:'Press banca (Lun)', days: allDays.filter(d => dayOfWeekIdx(d)===1) },
-    { routineKey:'empuje', exIdx:2, label:'Press militar (Lun)', days: allDays.filter(d => dayOfWeekIdx(d)===1) },
-    { routineKey:'tiron',  exIdx:0, label:'Jalón/Dominadas (Mié)', days: allDays.filter(d => dayOfWeekIdx(d)===3) },
-    { routineKey:'tiron',  exIdx:1, label:'Remo barra (Mié)', days: allDays.filter(d => dayOfWeekIdx(d)===3) },
-    { routineKey:'piernas',exIdx:0, label:'Sentadilla (Vie)', days: allDays.filter(d => dayOfWeekIdx(d)===5) },
-    { routineKey:'piernas',exIdx:1, label:'Peso muerto rumano (Vie)', days: allDays.filter(d => dayOfWeekIdx(d)===5) },
-  ];
+  const routineDayMap = { empuje:1, tiron:3, piernas:5, torso:6 };
+  const dayLabels = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const gymSessions = [];
+  Object.entries(GYM_ROUTINES).forEach(([rKey, r]) => {
+    r.ejercicios.forEach(([name], i) => {
+      gymSessions.push({
+        routineKey: rKey,
+        exIdx: i,
+        label: `${name} (${dayLabels[routineDayMap[rKey]]})`,
+        days: allDays.filter(d => dayOfWeekIdx(d) === routineDayMap[rKey])
+      });
+    });
+  });
 
   function buildGymChart(exIdx) {
     const ex = gymSessions[exIdx];
@@ -1673,14 +1678,19 @@ function selectGymEx(idx) {
   document.querySelectorAll('.gym-ex-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
   const allDays = [];
   WEEKS.forEach(w => w.days.forEach(d => allDays.push(d)));
-  const gymSessions = [
-    { routineKey:'empuje', exIdx:0, label:'Press banca', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===1; }) },
-    { routineKey:'empuje', exIdx:2, label:'Press militar', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===1; }) },
-    { routineKey:'tiron',  exIdx:0, label:'Jalón/Dominadas', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===3; }) },
-    { routineKey:'tiron',  exIdx:1, label:'Remo barra', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===3; }) },
-    { routineKey:'piernas',exIdx:0, label:'Sentadilla', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===5; }) },
-    { routineKey:'piernas',exIdx:1, label:'Peso muerto rumano', days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===5; }) },
-  ];
+  const routineDayMap2 = { empuje:1, tiron:3, piernas:5, torso:6 };
+  const dayLabels2 = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const gymSessions = [];
+  Object.entries(GYM_ROUTINES).forEach(([rKey, r]) => {
+    r.ejercicios.forEach(([name], i) => {
+      gymSessions.push({
+        routineKey: rKey,
+        exIdx: i,
+        label: `${name}`,
+        days: allDays.filter(d => { const nm=d.n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,""); const map={dom:0,lun:1,mar:2,mie:3,jue:4,vie:5,sab:6}; return map[nm.slice(0,3)]===routineDayMap2[rKey]; })
+      });
+    });
+  });
   const ex = gymSessions[idx];
   const labels = ex.days.map(d => d.d);
   const data = ex.days.map(d => { const v = localStorage.getItem(`gym|${ex.routineKey}|${ex.exIdx}|${d.k}`); return v ? parseFloat(v) : null; });
@@ -1694,8 +1704,11 @@ function selectGymEx(idx) {
 
 function selectWeek(idx) {
   currentWeek = idx;
-  document.querySelectorAll('.week-tab').forEach((t,i)=>
-    t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
+  const progTab = document.getElementById('tabProgreso');
+  const allTabs = document.querySelectorAll('.week-tab');
+  if (allTabs.length > 0) allTabs[0].classList.add('active');
+  if (progTab) progTab.classList.remove('active');
   document.getElementById('gridWrap').style.display = '';
   document.getElementById('progressPage').classList.remove('show');
   renderGrid();
